@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NFL Team Break Overlay</title>
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;padding:0;width:100%;height:auto;min-height:0;
+  background:transparent!important;overflow:hidden;
+}
+body{font-family:Arial,Helvetica,sans-serif}
+.overlay{width:100vw;padding:4px;background:transparent}
+.board{
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(16,minmax(0,1fr));
+  grid-template-rows:repeat(2,1fr);
+  gap:4px;
+}
+.team{
+  position:relative;
+  min-width:0;
+  height:88px;
+  border:1.5px solid rgba(255,28,35,.98);
+  border-radius:7px;
+  background:rgba(255,255,255,.72);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  box-shadow:0 0 6px rgba(255,28,35,.16);
+}
+.team img{
+  width:96%;
+  height:96%;
+  object-fit:contain;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.3));
+}
+.team.sold{
+  background:rgba(255,255,255,.48);
+  border-color:rgba(115,115,115,.78);
+}
+.team.sold img{
+  opacity:.18;
+  filter:grayscale(1);
+}
+.team.sold::before,.team.sold::after{
+  content:"";
+  position:absolute;
+  width:74%;
+  height:5px;
+  border-radius:999px;
+  background:#ff1c23;
+  z-index:3;
+  box-shadow:0 0 7px rgba(255,28,35,.75);
+}
+.team.sold::before{transform:rotate(45deg)}
+.team.sold::after{transform:rotate(-45deg)}
+@media(max-width:900px){
+  .board{gap:3px}
+  .team{height:72px;border-radius:5px}
+  .team.sold::before,.team.sold::after{height:4px}
+}
+</style>
+</head>
+<body>
+<div class="overlay"><div class="board">
+<div class="team" data-team="BUF"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/buf.png" alt="BUF"></div>
+<div class="team" data-team="MIA"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/mia.png" alt="MIA"></div>
+<div class="team" data-team="NE"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ne.png" alt="NE"></div>
+<div class="team" data-team="NYJ"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png" alt="NYJ"></div>
+<div class="team" data-team="BAL"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" alt="BAL"></div>
+<div class="team" data-team="CIN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/cin.png" alt="CIN"></div>
+<div class="team" data-team="CLE"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/cle.png" alt="CLE"></div>
+<div class="team" data-team="PIT"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/pit.png" alt="PIT"></div>
+<div class="team" data-team="HOU"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/hou.png" alt="HOU"></div>
+<div class="team" data-team="IND"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ind.png" alt="IND"></div>
+<div class="team" data-team="JAX"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" alt="JAX"></div>
+<div class="team" data-team="TEN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ten.png" alt="TEN"></div>
+<div class="team" data-team="DEN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/den.png" alt="DEN"></div>
+<div class="team" data-team="KC"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/kc.png" alt="KC"></div>
+<div class="team" data-team="LV"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/lv.png" alt="LV"></div>
+<div class="team" data-team="LAC"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/lac.png" alt="LAC"></div>
+<div class="team" data-team="DAL"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/dal.png" alt="DAL"></div>
+<div class="team" data-team="NYG"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png" alt="NYG"></div>
+<div class="team" data-team="PHI"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" alt="PHI"></div>
+<div class="team" data-team="WAS"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/was.png" alt="WAS"></div>
+<div class="team" data-team="CHI"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" alt="CHI"></div>
+<div class="team" data-team="DET"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/det.png" alt="DET"></div>
+<div class="team" data-team="GB"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" alt="GB"></div>
+<div class="team" data-team="MIN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/min.png" alt="MIN"></div>
+<div class="team" data-team="ATL"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/atl.png" alt="ATL"></div>
+<div class="team" data-team="CAR"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/car.png" alt="CAR"></div>
+<div class="team" data-team="NO"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/no.png" alt="NO"></div>
+<div class="team" data-team="TB"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/tb.png" alt="TB"></div>
+<div class="team" data-team="ARI"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ari.png" alt="ARI"></div>
+<div class="team" data-team="LAR"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/lar.png" alt="LAR"></div>
+<div class="team" data-team="SF"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" alt="SF"></div>
+<div class="team" data-team="SEA"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" alt="SEA"></div>
+</div></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+import { firebaseConfig, ROOM_ID } from "./config.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const soldRef = ref(db, `boards/${ROOM_ID}/teamBreakSold`);
+
+onValue(soldRef, snapshot => {
+  const sold = snapshot.val() || {};
+  document.querySelectorAll(".team").forEach(el => {
+    el.classList.toggle("sold", !!sold[el.dataset.team]);
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bucks Breaks NFL Team Controller</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial,Helvetica,sans-serif}
+.wrap{max-width:1050px;margin:auto;padding:18px}
+h1{margin:0 0 5px;font-size:26px}
+.sub{opacity:.7;margin-bottom:12px}
+#status{font-size:12px;opacity:.75;margin-bottom:12px}
+.actions{display:flex;gap:8px;margin-bottom:14px}
+.actions button{padding:10px 14px;border-radius:9px;background:#191919;border:1px solid #444;color:#fff;font-weight:800;cursor:pointer}
+.actions .reset{background:#351315;border-color:#7b3438}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.group{background:#111;border:1px solid #2e2e2e;border-radius:12px;padding:10px}
+.group h2{font-size:14px;color:#ff3b42;margin:0 0 6px}
+.row{display:grid;grid-template-columns:60px 1fr 95px;gap:8px;align-items:center;border-top:1px solid #252525;padding:7px 0}
+.abbr{font-weight:900} .name{opacity:.8}
+.row button{cursor:pointer;background:#1a1a1a;color:#fff;border:1px solid #444;border-radius:8px;padding:8px;font-weight:800}
+.row button.sold{background:#35190d;border-color:#ff1c23;color:#ff777b}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Bucks Breaks — NFL Team Break Controller</h1>
+<div class="sub">Click individual teams to mark SOLD or AVAILABLE. This is separate from the division-break board.</div>
+<div id="status">Connecting…</div>
+<div class="actions"><button id="undo">UNDO</button><button class="reset" id="reset">RESET ALL</button></div>
+<div class="grid" id="grid"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+import { firebaseConfig, ROOM_ID } from "./config.js";
+
+const TEAMS = {
+  "AFC EAST":[["BUF","Bills"],["MIA","Dolphins"],["NE","Patriots"],["NYJ","Jets"]],
+  "AFC NORTH":[["BAL","Ravens"],["CIN","Bengals"],["CLE","Browns"],["PIT","Steelers"]],
+  "AFC SOUTH":[["HOU","Texans"],["IND","Colts"],["JAX","Jaguars"],["TEN","Titans"]],
+  "AFC WEST":[["DEN","Broncos"],["KC","Chiefs"],["LV","Raiders"],["LAC","Chargers"]],
+  "NFC EAST":[["DAL","Cowboys"],["NYG","Giants"],["PHI","Eagles"],["WAS","Commanders"]],
+  "NFC NORTH":[["CHI","Bears"],["DET","Lions"],["GB","Packers"],["MIN","Vikings"]],
+  "NFC SOUTH":[["ATL","Falcons"],["CAR","Panthers"],["NO","Saints"],["TB","Buccaneers"]],
+  "NFC WEST":[["ARI","Cardinals"],["LAR","Rams"],["SF","49ers"],["SEA","Seahawks"]]
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const soldRef=ref(db, `boards/${ROOM_ID}/teamBreakSold`);
+let sold={};
+let history=[];
+
+function render(){
+  const grid=document.getElementById("grid");
+  grid.innerHTML="";
+  for(const [division, arr] of Object.entries(TEAMS)){
+    const group=document.createElement("div");
+    group.className="group";
+    group.innerHTML=`<h2>${division}</h2>`;
+    arr.forEach(([abbr,name])=>{
+      const row=document.createElement("div");
+      row.className="row";
+      row.innerHTML=`<div class="abbr">${abbr}</div><div class="name">${name}</div>`;
+      const btn=document.createElement("button");
+      btn.textContent=sold[abbr]?"SOLD":"AVAILABLE";
+      btn.className=sold[abbr]?"sold":"";
+      btn.onclick=()=>toggle(abbr);
+      row.appendChild(btn);
+      group.appendChild(row);
+    });
+    grid.appendChild(group);
+  }
+}
+
+async function toggle(abbr){
+  history.push(JSON.parse(JSON.stringify(sold)));
+  await update(soldRef, {[abbr]: sold[abbr] ? null : true});
+}
+
+document.getElementById("reset").onclick=async()=>{
+  history.push(JSON.parse(JSON.stringify(sold)));
+  await set(soldRef,null);
+};
+
+document.getElementById("undo").onclick=async()=>{
+  if(!history.length)return;
+  await set(soldRef,history.pop());
+};
+
+onValue(soldRef,snapshot=>{
+  sold=snapshot.val()||{};
+  render();
+  document.getElementById("status").textContent="Connected — team changes are live";
+},()=>{
+  document.getElementById("status").textContent="Connection error";
+});
+
+render();
+</script>
+</body>
+</html>
