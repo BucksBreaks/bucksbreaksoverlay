@@ -1,14 +1,10 @@
-// Paste your Firebase web app configuration here.
-// Firebase Console > Project settings > Your apps > Web app > SDK setup and configuration
 export const firebaseConfig = {
-  apiKey: "PASTE_API_KEY_HERE",
-  authDomain: "PASTE_AUTH_DOMAIN_HERE",
-  databaseURL: "PASTE_DATABASE_URL_HERE",
-  projectId: "PASTE_PROJECT_ID_HERE",
-  storageBucket: "PASTE_STORAGE_BUCKET_HERE",
-  messagingSenderId: "PASTE_MESSAGING_SENDER_ID_HERE",
-  appId: "PASTE_APP_ID_HERE"
-};
-
-// This just keeps your board data in its own path.
-export const ROOM_ID = "bucks-breaks-main";
+    apiKey: "AIzaSyAfBJRfnnzrmfJ7PXAhM9z_3_UXKUN1sDc",
+    authDomain: "bucks-breaks-overlay.firebaseapp.com",
+    databaseURL: "https://bucks-breaks-overlay-default-rtdb.firebaseio.com",
+    projectId: "bucks-breaks-overlay",
+    storageBucket: "bucks-breaks-overlay.firebasestorage.app",
+    messagingSenderId: "880434607485",
+    appId: "1:880434607485:web:1e2dcdfba13e446bfcc814",
+    measurementId: "G-XW0F8XK12R"
+  }; export const ROOM_ID = "bucks-breaks-main";
