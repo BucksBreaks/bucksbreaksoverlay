@@ -6,6 +6,7 @@
 <title>NFL Team Availability Overlay</title>
 <style>
 *{box-sizing:border-box}
+
 html,body{
   margin:0;
   padding:0;
@@ -15,27 +16,52 @@ html,body{
   background:transparent!important;
   overflow:hidden;
 }
-body{font-family:Arial,Helvetica,sans-serif}
+
+body{
+  font-family:Arial,Helvetica,sans-serif;
+}
 
 .overlay{
   width:100vw;
-  height:auto;
-  padding:3px 4px;
+  padding:4px;
   background:transparent;
 }
 
-.board{
+.division{
   width:100%;
   display:grid;
-  grid-template-columns:repeat(16,minmax(0,1fr));
-  grid-template-rows:repeat(2,1fr);
-  gap:3px;
+  grid-template-columns:110px repeat(4,minmax(0,1fr));
+  gap:4px;
+  margin-bottom:4px;
+  align-items:center;
+}
+
+.division:last-child{
+  margin-bottom:0;
+}
+
+.division-label{
+  height:54px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:4px 6px;
+  border-radius:6px;
+  background:rgba(8,8,9,.72);
+  border:1.5px solid rgba(255,28,35,.95);
+  color:#fff;
+  font-size:15px;
+  font-weight:900;
+  line-height:1.05;
+  letter-spacing:.35px;
+  text-shadow:0 1px 2px rgba(0,0,0,.8);
 }
 
 .team{
   position:relative;
   min-width:0;
-  height:74px;
+  height:54px;
   border:1.5px solid rgba(255,28,35,.98);
   border-radius:6px;
   background:rgba(3,3,4,.78);
@@ -49,15 +75,15 @@ body{font-family:Arial,Helvetica,sans-serif}
 }
 
 .team img{
-  width:84%;
-  height:84%;
+  width:86%;
+  height:86%;
   object-fit:contain;
   filter:drop-shadow(0 2px 2px rgba(0,0,0,.5));
 }
 
 .team.sold{
-  background:rgba(0,0,0,.84);
-  border-color:rgba(120,120,120,.7);
+  background:rgba(0,0,0,.86);
+  border-color:rgba(120,120,120,.72);
 }
 
 .team.sold img{
@@ -65,64 +91,121 @@ body{font-family:Arial,Helvetica,sans-serif}
   filter:grayscale(1);
 }
 
-.team.sold::before,.team.sold::after{
+.team.sold::before,
+.team.sold::after{
   content:"";
   position:absolute;
-  width:76%;
+  width:68%;
   height:5px;
   border-radius:999px;
   background:#ff1c23;
   z-index:3;
-  box-shadow:0 0 7px rgba(255,28,35,.75);
+  box-shadow:0 0 7px rgba(255,28,35,.78);
 }
+
 .team.sold::before{transform:rotate(45deg)}
 .team.sold::after{transform:rotate(-45deg)}
 
-@media(max-width:900px){
-  .overlay{padding:2px 3px}
-  .board{gap:2px}
-  .team{height:60px;border-radius:5px}
-  .team img{width:86%;height:86%}
-  .team.sold::before,.team.sold::after{height:4px}
+@media(max-width:700px){
+  .overlay{padding:3px}
+
+  .division{
+    grid-template-columns:84px repeat(4,minmax(0,1fr));
+    gap:3px;
+    margin-bottom:3px;
+  }
+
+  .division-label{
+    height:50px;
+    font-size:12px;
+    border-radius:5px;
+  }
+
+  .team{
+    height:50px;
+    border-radius:5px;
+  }
+
+  .team img{
+    width:88%;
+    height:88%;
+  }
+
+  .team.sold::before,
+  .team.sold::after{
+    height:4px;
+  }
 }
 </style>
 </head>
 <body>
+
 <div class="overlay">
-  <div class="board">
+
+  <div class="division">
+    <div class="division-label">AFC<br>EAST</div>
     <div class="team" data-team="BUF"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/buf.png" alt="BUF"></div>
-<div class="team" data-team="MIA"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/mia.png" alt="MIA"></div>
-<div class="team" data-team="NE"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ne.png" alt="NE"></div>
-<div class="team" data-team="NYJ"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png" alt="NYJ"></div>
-<div class="team" data-team="BAL"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" alt="BAL"></div>
-<div class="team" data-team="CIN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/cin.png" alt="CIN"></div>
-<div class="team" data-team="CLE"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/cle.png" alt="CLE"></div>
-<div class="team" data-team="PIT"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/pit.png" alt="PIT"></div>
-<div class="team" data-team="HOU"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/hou.png" alt="HOU"></div>
-<div class="team" data-team="IND"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ind.png" alt="IND"></div>
-<div class="team" data-team="JAX"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" alt="JAX"></div>
-<div class="team" data-team="TEN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ten.png" alt="TEN"></div>
-<div class="team" data-team="DEN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/den.png" alt="DEN"></div>
-<div class="team" data-team="KC"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/kc.png" alt="KC"></div>
-<div class="team" data-team="LV"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/lv.png" alt="LV"></div>
-<div class="team" data-team="LAC"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/lac.png" alt="LAC"></div>
-<div class="team" data-team="DAL"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/dal.png" alt="DAL"></div>
-<div class="team" data-team="NYG"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png" alt="NYG"></div>
-<div class="team" data-team="PHI"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" alt="PHI"></div>
-<div class="team" data-team="WAS"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/was.png" alt="WAS"></div>
-<div class="team" data-team="CHI"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" alt="CHI"></div>
-<div class="team" data-team="DET"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/det.png" alt="DET"></div>
-<div class="team" data-team="GB"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" alt="GB"></div>
-<div class="team" data-team="MIN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/min.png" alt="MIN"></div>
-<div class="team" data-team="ATL"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/atl.png" alt="ATL"></div>
-<div class="team" data-team="CAR"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/car.png" alt="CAR"></div>
-<div class="team" data-team="NO"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/no.png" alt="NO"></div>
-<div class="team" data-team="TB"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/tb.png" alt="TB"></div>
-<div class="team" data-team="ARI"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ari.png" alt="ARI"></div>
-<div class="team" data-team="LAR"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/lar.png" alt="LAR"></div>
-<div class="team" data-team="SF"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" alt="SF"></div>
-<div class="team" data-team="SEA"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" alt="SEA"></div>
+    <div class="team" data-team="MIA"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/mia.png" alt="MIA"></div>
+    <div class="team" data-team="NE"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ne.png" alt="NE"></div>
+    <div class="team" data-team="NYJ"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png" alt="NYJ"></div>
   </div>
+
+  <div class="division">
+    <div class="division-label">AFC<br>NORTH</div>
+    <div class="team" data-team="BAL"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" alt="BAL"></div>
+    <div class="team" data-team="CIN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/cin.png" alt="CIN"></div>
+    <div class="team" data-team="CLE"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/cle.png" alt="CLE"></div>
+    <div class="team" data-team="PIT"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/pit.png" alt="PIT"></div>
+  </div>
+
+  <div class="division">
+    <div class="division-label">AFC<br>SOUTH</div>
+    <div class="team" data-team="HOU"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/hou.png" alt="HOU"></div>
+    <div class="team" data-team="IND"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ind.png" alt="IND"></div>
+    <div class="team" data-team="JAX"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" alt="JAX"></div>
+    <div class="team" data-team="TEN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ten.png" alt="TEN"></div>
+  </div>
+
+  <div class="division">
+    <div class="division-label">AFC<br>WEST</div>
+    <div class="team" data-team="DEN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/den.png" alt="DEN"></div>
+    <div class="team" data-team="KC"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/kc.png" alt="KC"></div>
+    <div class="team" data-team="LV"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/lv.png" alt="LV"></div>
+    <div class="team" data-team="LAC"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/lac.png" alt="LAC"></div>
+  </div>
+
+  <div class="division">
+    <div class="division-label">NFC<br>EAST</div>
+    <div class="team" data-team="DAL"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/dal.png" alt="DAL"></div>
+    <div class="team" data-team="NYG"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png" alt="NYG"></div>
+    <div class="team" data-team="PHI"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" alt="PHI"></div>
+    <div class="team" data-team="WAS"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/was.png" alt="WAS"></div>
+  </div>
+
+  <div class="division">
+    <div class="division-label">NFC<br>NORTH</div>
+    <div class="team" data-team="CHI"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" alt="CHI"></div>
+    <div class="team" data-team="DET"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/det.png" alt="DET"></div>
+    <div class="team" data-team="GB"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" alt="GB"></div>
+    <div class="team" data-team="MIN"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/min.png" alt="MIN"></div>
+  </div>
+
+  <div class="division">
+    <div class="division-label">NFC<br>SOUTH</div>
+    <div class="team" data-team="ATL"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/atl.png" alt="ATL"></div>
+    <div class="team" data-team="CAR"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/car.png" alt="CAR"></div>
+    <div class="team" data-team="NO"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/no.png" alt="NO"></div>
+    <div class="team" data-team="TB"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/tb.png" alt="TB"></div>
+  </div>
+
+  <div class="division">
+    <div class="division-label">NFC<br>WEST</div>
+    <div class="team" data-team="ARI"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/ari.png" alt="ARI"></div>
+    <div class="team" data-team="LAR"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/lar.png" alt="LAR"></div>
+    <div class="team" data-team="SF"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/sf.png" alt="SF"></div>
+    <div class="team" data-team="SEA"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/sea.png" alt="SEA"></div>
+  </div>
+
 </div>
 
 <script type="module">
@@ -141,5 +224,6 @@ onValue(soldRef, snapshot => {
   });
 });
 </script>
+
 </body>
 </html>
