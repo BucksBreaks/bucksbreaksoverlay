@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bucks Breaks NFL Overlay</title>
+<style>
+html,body{margin:0;background:transparent;overflow:hidden;font-family:Arial,Helvetica,sans-serif}
+#wrap{width:100%;padding:4px}
+.grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+.label{grid-column:span 4;background:rgba(255,90,0,.94);color:white;border-radius:5px;padding:2px 6px;font-size:11px;font-weight:900;letter-spacing:.4px}
+.chip{height:34px;border-radius:7px;background:rgba(8,8,8,.94);border:2px solid #ff5a00;color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;text-shadow:0 1px 2px #000}
+.chip.sold{border-color:#5a5a5a;color:#ff6a12;font-size:18px}
+.status{position:fixed;right:5px;bottom:3px;color:#fff;background:rgba(0,0,0,.55);font-size:9px;padding:2px 4px;border-radius:4px;opacity:.55}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="grid" class="grid"></div></div><div id="status" class="status">connecting…</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+import { firebaseConfig, ROOM_ID } from "./config.js";
+
+const TEAMS={"AFC EAST": [["BUF", "Bills"], ["MIA", "Dolphins"], ["NE", "Patriots"], ["NYJ", "Jets"]], "AFC NORTH": [["BAL", "Ravens"], ["CIN", "Bengals"], ["CLE", "Browns"], ["PIT", "Steelers"]], "AFC SOUTH": [["HOU", "Texans"], ["IND", "Colts"], ["JAX", "Jaguars"], ["TEN", "Titans"]], "AFC WEST": [["DEN", "Broncos"], ["KC", "Chiefs"], ["LV", "Raiders"], ["LAC", "Chargers"]], "NFC EAST": [["DAL", "Cowboys"], ["NYG", "Giants"], ["PHI", "Eagles"], ["WAS", "Commanders"]], "NFC NORTH": [["CHI", "Bears"], ["DET", "Lions"], ["GB", "Packers"], ["MIN", "Vikings"]], "NFC SOUTH": [["ATL", "Falcons"], ["CAR", "Panthers"], ["NO", "Saints"], ["TB", "Buccaneers"]], "NFC WEST": [["ARI", "Cardinals"], ["LAR", "Rams"], ["SF", "49ers"], ["SEA", "Seahawks"]]};
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const boardRef=ref(db, `boards/${ROOM_ID}/sold`);
+let sold={};
+
+function draw(){
+ const g=document.getElementById('grid'); g.innerHTML='';
+ for(const [div, arr] of Object.entries(TEAMS)){
+   const lab=document.createElement('div');lab.className='label';lab.textContent=div;g.appendChild(lab);
+   for(const [abbr] of arr){
+      const c=document.createElement('div');c.className='chip'+(sold[abbr]?' sold':'');
+      c.textContent=sold[abbr]?'↻':abbr;g.appendChild(c);
+   }
+ }
+}
+onValue(boardRef,(snap)=>{
+ sold=snap.val()||{};
+ draw();
+ document.getElementById('status').textContent='LIVE';
+},(err)=>{document.getElementById('status').textContent='connection error';console.error(err);});
+draw();
+</script>
+</body>
+</html>
