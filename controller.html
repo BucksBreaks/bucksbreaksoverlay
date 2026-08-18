@@ -1,67 +1,115 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bucks Breaks NFL Controller</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bucks Breaks NFL Division Controller</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial,Helvetica,sans-serif}
-.wrap{max-width:1100px;margin:auto;padding:18px}h1{margin:0 0 4px}.sub{opacity:.7;margin-bottom:14px}
-.actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}button{cursor:pointer;background:#1a1a1a;color:#fff;border:1px solid #444;border-radius:10px;padding:10px 12px;font-weight:800}
-button:hover{border-color:#ff5a00}.reset{background:#321313;border-color:#713333}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.div{background:#111;border:1px solid #2e2e2e;border-radius:14px;padding:12px}.div h2{font-size:15px;color:#ff6a00;margin:0 0 8px}
-.row{display:grid;grid-template-columns:75px 1fr 95px;gap:8px;align-items:center;border-top:1px solid #252525;padding:8px 0}
-.abbr{font-weight:900}.name{opacity:.8}.sold{background:#35190d;border-color:#ff5a00;color:#ff874a}
-#conn{font-size:12px;opacity:.7;margin-bottom:10px}@media(max-width:720px){.grid{grid-template-columns:1fr}}
+*{box-sizing:border-box}
+body{margin:0;background:#0b0b0b;color:#fff;font-family:Arial,Helvetica,sans-serif}
+.wrap{max-width:850px;margin:auto;padding:20px}
+h1{margin:0 0 5px;font-size:26px}
+.sub{opacity:.7;margin-bottom:15px}
+#status{font-size:12px;opacity:.75;margin-bottom:12px}
+.actions{display:flex;gap:8px;margin-bottom:15px}
+button{cursor:pointer;color:#fff;font-weight:800}
+.actions button{padding:10px 14px;border-radius:9px;background:#191919;border:1px solid #444}
+.actions .reset{background:#351315;border-color:#7b3438}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.division-btn{
+  min-height:86px;padding:14px;border-radius:12px;
+  border:2px solid #e31b23;background:#151515;
+  display:flex;justify-content:space-between;align-items:center;text-align:left;
+}
+.division-btn span{font-size:20px}
+.division-btn strong{font-size:13px;color:#ddd}
+.division-btn.sold{background:#361012;border-color:#ff1c23}
+.division-btn.sold strong{color:#ff7377}
+@media(max-width:650px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
-<body><div class="wrap">
-<h1>Bucks Breaks — NFL Controller</h1>
-<div class="sub">This page stays private. Click a team to switch AVAILABLE ↔ SOLD. TikTok's overlay page updates automatically.</div>
-<div id="conn">Connecting…</div>
-<div class="actions"><button id="undo">UNDO</button><button class="reset" id="reset">RESET ALL</button></div>
-<div class="grid" id="grid"></div>
+<body>
+<div class="wrap">
+<h1>Bucks Breaks — NFL Divisions</h1>
+<div class="sub">Click a division to mark the entire 4-team spot SOLD or AVAILABLE.</div>
+<div id="status">Connecting…</div>
+<div class="actions">
+  <button id="undo">UNDO</button>
+  <button class="reset" id="reset">RESET ALL</button>
 </div>
+<div class="grid">
+<button class="division-btn" data-teams="BUF,MIA,NE,NYJ" data-division="AFC EAST">
+  <span>AFC EAST</span><strong>AVAILABLE</strong>
+</button><button class="division-btn" data-teams="BAL,CIN,CLE,PIT" data-division="AFC NORTH">
+  <span>AFC NORTH</span><strong>AVAILABLE</strong>
+</button><button class="division-btn" data-teams="HOU,IND,JAX,TEN" data-division="AFC SOUTH">
+  <span>AFC SOUTH</span><strong>AVAILABLE</strong>
+</button><button class="division-btn" data-teams="DEN,KC,LV,LAC" data-division="AFC WEST">
+  <span>AFC WEST</span><strong>AVAILABLE</strong>
+</button><button class="division-btn" data-teams="DAL,NYG,PHI,WAS" data-division="NFC EAST">
+  <span>NFC EAST</span><strong>AVAILABLE</strong>
+</button><button class="division-btn" data-teams="CHI,DET,GB,MIN" data-division="NFC NORTH">
+  <span>NFC NORTH</span><strong>AVAILABLE</strong>
+</button><button class="division-btn" data-teams="ATL,CAR,NO,TB" data-division="NFC SOUTH">
+  <span>NFC SOUTH</span><strong>AVAILABLE</strong>
+</button><button class="division-btn" data-teams="ARI,LAR,SF,SEA" data-division="NFC WEST">
+  <span>NFC WEST</span><strong>AVAILABLE</strong>
+</button>
+</div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
 import { firebaseConfig, ROOM_ID } from "./config.js";
 
-const TEAMS={"AFC EAST": [["BUF", "Bills"], ["MIA", "Dolphins"], ["NE", "Patriots"], ["NYJ", "Jets"]], "AFC NORTH": [["BAL", "Ravens"], ["CIN", "Bengals"], ["CLE", "Browns"], ["PIT", "Steelers"]], "AFC SOUTH": [["HOU", "Texans"], ["IND", "Colts"], ["JAX", "Jaguars"], ["TEN", "Titans"]], "AFC WEST": [["DEN", "Broncos"], ["KC", "Chiefs"], ["LV", "Raiders"], ["LAC", "Chargers"]], "NFC EAST": [["DAL", "Cowboys"], ["NYG", "Giants"], ["PHI", "Eagles"], ["WAS", "Commanders"]], "NFC NORTH": [["CHI", "Bears"], ["DET", "Lions"], ["GB", "Packers"], ["MIN", "Vikings"]], "NFC SOUTH": [["ATL", "Falcons"], ["CAR", "Panthers"], ["NO", "Saints"], ["TB", "Buccaneers"]], "NFC WEST": [["ARI", "Cardinals"], ["LAR", "Rams"], ["SF", "49ers"], ["SEA", "Seahawks"]]};
-const app=initializeApp(firebaseConfig);
-const db=getDatabase(app);
-const soldRef=ref(db,`boards/${ROOM_ID}/sold`);
-let sold={}, history=[];
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const soldRef = ref(db, `boards/${ROOM_ID}/sold`);
+let sold = {};
+let history = [];
 
 function render(){
- const g=document.getElementById('grid');g.innerHTML='';
- for(const [div,arr] of Object.entries(TEAMS)){
-  const box=document.createElement('div');box.className='div';
-  const h=document.createElement('h2');h.textContent=div;box.appendChild(h);
-  for(const [abbr,name] of arr){
-   const row=document.createElement('div');row.className='row';
-   const a=document.createElement('div');a.className='abbr';a.textContent=abbr;
-   const n=document.createElement('div');n.className='name';n.textContent=name;
-   const b=document.createElement('button');b.className=sold[abbr]?'sold':'';
-   b.textContent=sold[abbr]?'SOLD':'AVAILABLE';
-   b.onclick=()=>toggle(abbr);
-   row.append(a,n,b);box.appendChild(row);
-  } g.appendChild(box);
- }
+  document.querySelectorAll(".division-btn").forEach(btn => {
+    const teams = btn.dataset.teams.split(",");
+    const isSold = teams.every(t => !!sold[t]);
+    btn.classList.toggle("sold", isSold);
+    btn.querySelector("strong").textContent = isSold ? "SOLD" : "AVAILABLE";
+  });
 }
-async function toggle(abbr){
- history.push(JSON.parse(JSON.stringify(sold)));
- const next=!sold[abbr];
- await update(soldRef,{[abbr]:next?true:null});
+
+async function toggleDivision(btn){
+  history.push(JSON.parse(JSON.stringify(sold)));
+  const teams = btn.dataset.teams.split(",");
+  const isSold = teams.every(t => !!sold[t]);
+  const changes = {};
+  teams.forEach(t => changes[t] = isSold ? null : true);
+  await update(soldRef, changes);
 }
-document.getElementById('reset').onclick=async()=>{
- history.push(JSON.parse(JSON.stringify(sold)));await set(soldRef,null);
+
+document.querySelectorAll(".division-btn").forEach(btn => {
+  btn.addEventListener("click", () => toggleDivision(btn));
+});
+
+document.getElementById("reset").onclick = async () => {
+  history.push(JSON.parse(JSON.stringify(sold)));
+  await set(soldRef, null);
 };
-document.getElementById('undo').onclick=async()=>{
- if(!history.length)return; const prev=history.pop(); await set(soldRef,prev);
+
+document.getElementById("undo").onclick = async () => {
+  if(!history.length) return;
+  await set(soldRef, history.pop());
 };
-onValue(soldRef,(snap)=>{sold=snap.val()||{};render();document.getElementById('conn').textContent='Connected — changes are live';},
-(err)=>{document.getElementById('conn').textContent='Connection error';console.error(err);});
+
+onValue(soldRef, snapshot => {
+  sold = snapshot.val() || {};
+  render();
+  document.getElementById("status").textContent = "Connected — division changes are live";
+}, () => {
+  document.getElementById("status").textContent = "Connection error";
+});
+
 render();
 </script>
-</body></html>
+</body>
+</html>
