@@ -6,60 +6,59 @@
 <title>NFL Team Availability Overlay</title>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;background:transparent!important;overflow:hidden}
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  background:transparent!important;
+  overflow:hidden;
+}
 body{font-family:Arial,Helvetica,sans-serif}
 
 .overlay{
   width:100vw;
-  height:25vh;
-  min-height:210px;
-  padding:10px 12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:linear-gradient(180deg,rgba(8,8,10,.72),rgba(8,8,10,.48));
-  border-top:1px solid rgba(255,55,55,.75);
-  border-bottom:1px solid rgba(255,55,55,.75);
-  box-shadow:0 0 22px rgba(220,0,0,.18) inset;
-  backdrop-filter:blur(2px);
+  padding:4px 6px;
+  background:transparent;
 }
 
 .board{
   width:100%;
   display:grid;
   grid-template-columns:repeat(16,minmax(0,1fr));
-  grid-template-rows:repeat(2,minmax(0,1fr));
-  gap:6px;
+  grid-template-rows:repeat(2,1fr);
+  gap:4px;
 }
 
 .team{
   position:relative;
   min-width:0;
-  height:min(9.3vh,86px);
-  border:1.5px solid rgba(238,35,42,.9);
-  border-radius:8px;
-  background:rgba(8,8,10,.58);
+  height:66px;
+  border:1.5px solid rgba(210,20,28,.9);
+  border-radius:7px;
+  background:rgba(5,5,6,.42);
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow:0 0 8px rgba(230,20,25,.12);
   overflow:hidden;
+  box-shadow:0 0 6px rgba(210,20,28,.12);
+  backdrop-filter:blur(1px);
 }
 
 .team img{
-  width:76%;
-  height:76%;
+  width:78%;
+  height:78%;
   object-fit:contain;
-  filter:drop-shadow(0 2px 2px rgba(0,0,0,.5));
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.45));
 }
 
 .team.sold{
-  background:rgba(5,5,6,.78);
-  border-color:rgba(115,115,115,.65);
+  background:rgba(0,0,0,.52);
+  border-color:rgba(90,90,90,.65);
 }
 
 .team.sold img{
-  opacity:.18;
+  opacity:.16;
   filter:grayscale(1);
 }
 
@@ -67,19 +66,19 @@ body{font-family:Arial,Helvetica,sans-serif}
   content:"";
   position:absolute;
   width:70%;
-  height:5px;
+  height:4px;
   border-radius:999px;
-  background:#ef2028;
+  background:#e31b23;
   z-index:3;
-  box-shadow:0 0 7px rgba(239,32,40,.65);
+  box-shadow:0 0 6px rgba(227,27,35,.6);
 }
 .team.sold::before{transform:rotate(45deg)}
 .team.sold::after{transform:rotate(-45deg)}
 
 @media(max-width:900px){
-  .overlay{height:25vh;min-height:150px;padding:6px}
+  .overlay{padding:3px 4px}
   .board{gap:3px}
-  .team{height:min(9vh,64px);border-radius:5px}
+  .team{height:54px;border-radius:5px}
   .team.sold::before,.team.sold::after{height:3px}
 }
 </style>
