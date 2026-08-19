@@ -1,44 +1,43 @@
-<!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Team Alerts</title>
-<style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:transparent!important;overflow:hidden;font-family:Arial,sans-serif}
-#stage{position:relative;width:100vw;height:100vh;pointer-events:none;overflow:hidden}
-.alert{position:absolute;left:-260px;top:38%;width:230px;min-height:96px;display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid #ff1c23;border-radius:18px;background:rgba(255,255,255,.9);box-shadow:0 10px 24px rgba(0,0,0,.22);animation:fly 3.1s cubic-bezier(.18,.72,.22,1) forwards}
-.iconWrap{position:relative;width:72px;height:72px;flex:0 0 72px;display:flex;align-items:center;justify-content:center}
-.logo{width:64px;height:64px;object-fit:contain}
-.flyIcon{position:absolute;right:-16px;top:-18px;font-size:38px;animation:bob .55s ease-in-out infinite alternate}
-.teamName{font-size:23px;font-weight:900;color:#111;text-transform:uppercase;line-height:1}
-.taken{margin-top:5px;font-size:16px;font-weight:900;color:#e31b23;letter-spacing:1.2px}
-@keyframes fly{0%{transform:translateX(0);opacity:0}8%{opacity:1}48%{transform:translateX(calc(50vw + 110px));opacity:1}62%{transform:translateX(calc(50vw + 110px));opacity:1}100%{transform:translateX(calc(100vw + 520px));opacity:0}}
-@keyframes bob{from{transform:translateY(-3px) rotate(-8deg)}to{transform:translateY(4px) rotate(8deg)}}
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Team Alerts</title><style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent!important;font-family:Arial,sans-serif}
+#stage{position:relative;width:100vw;height:100vh;overflow:hidden;pointer-events:none}
+.fx{position:absolute;inset:0;overflow:hidden}.hero{position:absolute;left:-30vw;top:38%;font-size:clamp(120px,22vw,280px);line-height:1;filter:drop-shadow(0 14px 10px rgba(0,0,0,.4));z-index:4}
+.label{position:absolute;left:50%;top:62%;transform:translate(-50%,-50%) scale(.5);font-size:clamp(36px,8vw,90px);font-weight:1000;color:#fff;letter-spacing:.08em;text-shadow:0 5px 0 #000,0 0 18px #e31b23;opacity:0;animation:pop 2.8s ease forwards;white-space:nowrap}
+.label small{display:block;text-align:center;font-size:.35em;color:#ff2b34;letter-spacing:.18em}
+.run .hero{animation:run 2.5s ease-out forwards}.fly .hero{top:20%;animation:fly 2.6s ease-out forwards}.splash .hero{top:48%;animation:splashArc 2.6s ease-out forwards}
+.jet .hero{top:30%;animation:jet 1.8s ease-out forwards}.lightning .hero{top:28%;animation:lightning 1.7s ease-out forwards}
+.spin .hero{animation:spin 2.3s ease-out forwards}.slam .hero{left:50%;top:-28%;animation:slam 2.2s ease-out forwards}
+.storm .hero,.slash .hero,.shoot .hero,.burst .hero,.glow .hero{animation:run 2.3s ease-out forwards}
+.p{position:absolute;z-index:2;pointer-events:none;animation:puff 1.1s ease-out forwards}
+.ring{position:absolute;left:50%;top:50%;width:20px;height:20px;border:8px solid #ff2b34;border-radius:50%;transform:translate(-50%,-50%);animation:ring 1.1s ease-out forwards}
+.flash{position:absolute;inset:0;background:white;animation:flash .5s ease-out}
+@keyframes run{0%{transform:translateX(0) scale(.8)}45%{transform:translateX(65vw) scale(1.18)}100%{transform:translateX(150vw) scale(.9)}}
+@keyframes fly{0%{transform:translate(-10vw,22vh) rotate(-18deg) scale(.75)}45%{transform:translate(65vw,-10vh) rotate(5deg) scale(1.2)}100%{transform:translate(150vw,-18vh) rotate(12deg) scale(.85)}}
+@keyframes splashArc{0%{transform:translate(-8vw,24vh) rotate(-25deg) scale(.75)}45%{transform:translate(62vw,-24vh) rotate(0) scale(1.2)}100%{transform:translate(150vw,32vh) rotate(28deg) scale(.8)}}
+@keyframes jet{0%{transform:translate(-10vw,18vh) rotate(-10deg) scale(.7)}100%{transform:translate(155vw,-20vh) rotate(-10deg) scale(1.05)}}
+@keyframes lightning{0%{transform:translate(-10vw,10vh) scale(.7);opacity:0}15%{opacity:1}55%{transform:translate(72vw,-8vh) scale(1.35)}100%{transform:translate(150vw,8vh) scale(.8);opacity:0}}
+@keyframes spin{0%{transform:translateX(0) rotate(0) scale(.7)}100%{transform:translateX(145vw) rotate(1080deg) scale(1.1)}}
+@keyframes slam{0%{transform:translate(-50%,-10vh) scale(.65);opacity:0}40%{transform:translate(-50%,48vh) scale(1.3);opacity:1}100%{transform:translate(-50%,110vh) scale(.9);opacity:0}}
+@keyframes pop{0%,35%{opacity:0;transform:translate(-50%,-50%) scale(.5)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.95)}}
+@keyframes puff{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(1.7);opacity:0}}
+@keyframes ring{0%{opacity:.9}100%{width:90vw;height:90vw;opacity:0}}@keyframes flash{0%{opacity:0}35%{opacity:.8}100%{opacity:0}}
 </style></head><body><div id="stage"></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
 import { firebaseConfig, ROOM_ID } from "./config.js";
-
-const META={"BUF": ["Bills", "\ud83e\uddac"], "MIA": ["Dolphins", "\ud83d\udc2c"], "NE": ["Patriots", "\ud83c\uddfa\ud83c\uddf8"], "NYJ": ["Jets", "\u2708\ufe0f"], "BAL": ["Ravens", "\ud83d\udc26\u200d\u2b1b"], "CIN": ["Bengals", "\ud83d\udc05"], "CLE": ["Browns", "\ud83d\udfe4"], "PIT": ["Steelers", "\u2699\ufe0f"], "HOU": ["Texans", "\u2b50"], "IND": ["Colts", "\ud83d\udc0e"], "JAX": ["Jaguars", "\ud83d\udc06"], "TEN": ["Titans", "\u2694\ufe0f"], "DEN": ["Broncos", "\ud83d\udc0e"], "KC": ["Chiefs", "\ud83c\udff9"], "LV": ["Raiders", "\ud83c\udff4\u200d\u2620\ufe0f"], "LAC": ["Chargers", "\u26a1"], "DAL": ["Cowboys", "\ud83e\udd20"], "NYG": ["Giants", "\ud83d\udca5"], "PHI": ["Eagles", "\ud83e\udd85"], "WAS": ["Commanders", "\ud83e\udee1"], "CHI": ["Bears", "\ud83d\udc3b"], "DET": ["Lions", "\ud83e\udd81"], "GB": ["Packers", "\ud83d\udce6"], "MIN": ["Vikings", "\ud83d\udee1\ufe0f"], "ATL": ["Falcons", "\ud83e\udd85"], "CAR": ["Panthers", "\ud83d\udc08\u200d\u2b1b"], "NO": ["Saints", "\u269c\ufe0f"], "TB": ["Buccaneers", "\ud83c\udff4\u200d\u2620\ufe0f"], "ARI": ["Cardinals", "\ud83d\udc26"], "LAR": ["Rams", "\ud83d\udc0f"], "SF": ["49ers", "\u26cf\ufe0f"], "SEA": ["Seahawks", "\ud83e\udd85"]};
-const SLUG={BUF:"buf",MIA:"mia",NE:"ne",NYJ:"nyj",BAL:"bal",CIN:"cin",CLE:"cle",PIT:"pit",HOU:"hou",IND:"ind",JAX:"jax",TEN:"ten",DEN:"den",KC:"kc",LV:"lv",LAC:"lac",DAL:"dal",NYG:"nyg",PHI:"phi",WAS:"was",CHI:"chi",DET:"det",GB:"gb",MIN:"min",ATL:"atl",CAR:"car",NO:"no",TB:"tb",ARI:"ari",LAR:"lar",SF:"sf",SEA:"sea"};
-const app=initializeApp(firebaseConfig), db=getDatabase(app), soldRef=ref(db,`boards/${ROOM_ID}/teamBreakSold`);
-let initialized=false, previous={}, queue=[], animating=false;
-
-function enqueue(code){queue.push(code);playNext()}
-function playNext(){
- if(animating||!queue.length)return;
- animating=true;
- const code=queue.shift(), [name,emoji]=META[code];
- const el=document.createElement("div");
- el.className="alert";
- el.innerHTML=`<div class="iconWrap"><img class="logo" src="https://a.espncdn.com/i/teamlogos/nfl/500/${SLUG[code]}.png"><div class="flyIcon">${emoji}</div></div><div><div class="teamName">${name}</div><div class="taken">TAKEN!</div></div>`;
- document.getElementById("stage").appendChild(el);
- el.addEventListener("animationend",()=>{el.remove();animating=false;setTimeout(playNext,120)},{once:true});
-}
-
-onValue(soldRef,snap=>{
- const current=snap.val()||{};
- if(!initialized){previous={...current};initialized=true;return;}
- Object.keys(META).forEach(code=>{if(!previous[code]&&current[code])enqueue(code)});
- previous={...current};
-});
+const META={"BUF": ["BILLS", "\ud83e\uddac", "run"], "MIA": ["DOLPHINS", "\ud83d\udc2c", "splash"], "NE": ["PATRIOTS", "\ud83c\uddfa\ud83c\uddf8", "burst"], "NYJ": ["JETS", "\u2708\ufe0f", "jet"], "BAL": ["RAVENS", "\ud83d\udc26\u200d\u2b1b", "fly"], "CIN": ["BENGALS", "\ud83d\udc05", "run"], "CLE": ["BROWNS", "\ud83c\udfc8", "slam"], "PIT": ["STEELERS", "\u2699\ufe0f", "spin"], "HOU": ["TEXANS", "\ud83d\udc02", "run"], "IND": ["COLTS", "\ud83d\udc0e", "run"], "JAX": ["JAGUARS", "\ud83d\udc06", "run"], "TEN": ["TITANS", "\u2694\ufe0f", "slash"], "DEN": ["BRONCOS", "\ud83d\udc0e", "run"], "KC": ["CHIEFS", "\ud83c\udff9", "shoot"], "LV": ["RAIDERS", "\ud83c\udff4\u200d\u2620\ufe0f", "storm"], "LAC": ["CHARGERS", "\u26a1", "lightning"], "DAL": ["COWBOYS", "\ud83e\udd20", "burst"], "NYG": ["GIANTS", "\ud83d\udca5", "slam"], "PHI": ["EAGLES", "\ud83e\udd85", "fly"], "WAS": ["COMMANDERS", "\ud83e\udee1", "burst"], "CHI": ["BEARS", "\ud83d\udc3b", "run"], "DET": ["LIONS", "\ud83e\udd81", "run"], "GB": ["PACKERS", "\ud83e\uddc0", "spin"], "MIN": ["VIKINGS", "\ud83d\udee1\ufe0f", "storm"], "ATL": ["FALCONS", "\ud83e\udd85", "fly"], "CAR": ["PANTHERS", "\ud83d\udc08\u200d\u2b1b", "run"], "NO": ["SAINTS", "\u269c\ufe0f", "glow"], "TB": ["BUCCANEERS", "\ud83c\udff4\u200d\u2620\ufe0f", "storm"], "ARI": ["CARDINALS", "\ud83d\udc26", "fly"], "LAR": ["RAMS", "\ud83d\udc0f", "run"], "SF": ["49ERS", "\u26cf\ufe0f", "slam"], "SEA": ["SEAHAWKS", "\ud83e\udd85", "fly"]};
+const app=initializeApp(firebaseConfig),db=getDatabase(app),soldRef=ref(db,`boards/${ROOM_ID}/teamBreakSold`);
+let init=false,prev={},q=[],busy=false;
+function particle(fx,text,x,y){let p=document.createElement("div");p.className="p";p.textContent=text;p.style.left=x+"%";p.style.top=y+"%";p.style.fontSize=(30+Math.random()*44)+"px";p.style.setProperty("--dx",(Math.random()*340-170)+"px");p.style.setProperty("--dy",(Math.random()*250-125)+"px");p.style.setProperty("--r",(Math.random()*220-110)+"deg");fx.appendChild(p)}
+function effects(type,fx){if(type==="run")for(let i=0;i<18;i++)setTimeout(()=>particle(fx,"💨",10+Math.random()*80,55+Math.random()*20),i*55);
+if(type==="fly")for(let i=0;i<14;i++)setTimeout(()=>particle(fx,"🪶",12+Math.random()*76,20+Math.random()*38),i*70);
+if(type==="splash")for(let i=0;i<24;i++)setTimeout(()=>particle(fx,Math.random()>.5?"💦":"💧",15+Math.random()*75,38+Math.random()*34),i*45);
+if(["slam","storm","slash","shoot","burst","glow"].includes(type)){let r=document.createElement("div");r.className="ring";fx.appendChild(r)}
+if(type==="lightning"){let f=document.createElement("div");f.className="flash";fx.appendChild(f);for(let i=0;i<18;i++)particle(fx,"⚡",15+Math.random()*75,15+Math.random()*65)}
+if(type==="jet")for(let i=0;i<18;i++)setTimeout(()=>particle(fx,"💨",5+Math.random()*80,35+Math.random()*20),i*40)}
+function play(){if(busy||!q.length)return;busy=true;let code=q.shift(),m=META[code],fx=document.createElement("div");fx.className="fx "+m[2];fx.innerHTML=`<div class="hero">${m[1]}</div><div class="label">${m[0]}<small>TAKEN!</small></div>`;stage.appendChild(fx);effects(m[2],fx);setTimeout(()=>{fx.remove();busy=false;setTimeout(play,120)},3200)}
+function enqueue(c){q.push(c);play()}
+onValue(soldRef,s=>{let cur=s.val()||{};if(!init){prev={...cur};init=true;return}Object.keys(META).forEach(c=>{if(!prev[c]&&cur[c])enqueue(c)});prev={...cur}})
 </script></body></html>
