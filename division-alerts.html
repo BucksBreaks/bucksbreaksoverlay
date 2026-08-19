@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Division Alerts</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent!important;font-family:Arial,Helvetica,sans-serif}
+#stage{position:relative;width:100vw;height:100vh;overflow:hidden;pointer-events:none}
+.fx{position:absolute;inset:0;overflow:hidden;--accent:#e31b23;--secondary:#111}
+.team-logo{
+  position:absolute;
+  width:min(19vw,210px);
+  height:min(19vw,210px);
+  object-fit:contain;
+  filter:drop-shadow(0 14px 12px rgba(0,0,0,.38));
+  opacity:0;
+  z-index:5;
+}
+.logo1{left:8%;top:18%;animation:in1 1.25s cubic-bezier(.16,.8,.22,1) forwards}
+.logo2{right:8%;top:18%;animation:in2 1.25s .08s cubic-bezier(.16,.8,.22,1) forwards}
+.logo3{left:12%;bottom:16%;animation:in3 1.25s .16s cubic-bezier(.16,.8,.22,1) forwards}
+.logo4{right:12%;bottom:16%;animation:in4 1.25s .24s cubic-bezier(.16,.8,.22,1) forwards}
+
+.division-name{
+  position:absolute;left:50%;top:47%;
+  transform:translate(-50%,-50%) scale(.35);
+  font-size:clamp(46px,10vw,112px);
+  font-weight:1000;letter-spacing:.06em;text-align:center;
+  color:#fff;white-space:nowrap;opacity:0;z-index:9;
+  text-shadow:0 6px 0 #000,0 0 26px var(--accent);
+  animation:titlePop 3.2s .55s ease forwards;
+}
+.division-name small{
+  display:block;margin-top:6px;font-size:.34em;
+  letter-spacing:.22em;color:var(--accent);
+  text-shadow:0 3px 0 #000,0 0 18px var(--accent);
+}
+
+.burst{
+  position:absolute;left:50%;top:50%;
+  width:20px;height:20px;border:9px solid var(--accent);
+  border-radius:50%;transform:translate(-50%,-50%);
+  opacity:.95;z-index:3;animation:ring 1.2s .72s ease-out forwards;
+}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:2;animation:flash .55s .78s ease-out}
+.shard{position:absolute;left:50%;top:50%;width:22px;height:22px;border-radius:4px;background:var(--accent);z-index:4;opacity:0;animation:shard 1.05s .82s ease-out forwards}
+.streak{position:absolute;height:8px;border-radius:999px;background:linear-gradient(90deg,transparent,var(--secondary),var(--accent),white);filter:blur(2px);opacity:.8;z-index:1}
+.s1{left:-30%;top:26%;width:45%;animation:streak 1.5s .1s ease-out forwards}
+.s2{right:-30%;top:68%;width:45%;transform:rotate(180deg);animation:streak2 1.5s .15s ease-out forwards}
+
+@keyframes in1{0%{opacity:0;transform:translate(-55vw,-25vh) rotate(-18deg) scale(.55)}70%{opacity:1;transform:translate(8vw,8vh) rotate(4deg) scale(1.14)}100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}}
+@keyframes in2{0%{opacity:0;transform:translate(55vw,-25vh) rotate(18deg) scale(.55)}70%{opacity:1;transform:translate(-8vw,8vh) rotate(-4deg) scale(1.14)}100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}}
+@keyframes in3{0%{opacity:0;transform:translate(-55vw,28vh) rotate(16deg) scale(.55)}70%{opacity:1;transform:translate(8vw,-8vh) rotate(-4deg) scale(1.14)}100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}}
+@keyframes in4{0%{opacity:0;transform:translate(55vw,28vh) rotate(-16deg) scale(.55)}70%{opacity:1;transform:translate(-8vw,-8vh) rotate(4deg) scale(1.14)}100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}}
+@keyframes titlePop{0%,18%{opacity:0;transform:translate(-50%,-50%) scale(.35)}33%{opacity:1;transform:translate(-50%,-50%) scale(1.22)}65%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.92)}}
+@keyframes ring{0%{opacity:.95;width:20px;height:20px}100%{opacity:0;width:108vw;height:108vw}}
+@keyframes flash{0%{opacity:0}35%{opacity:.92}100%{opacity:0}}
+@keyframes shard{0%{opacity:1;transform:translate(-50%,-50%) translate(0,0) rotate(0) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) translate(var(--dx),var(--dy)) rotate(var(--r)) scale(.5)}}
+@keyframes streak{to{transform:translateX(145vw);opacity:0}}
+@keyframes streak2{to{transform:rotate(180deg) translateX(145vw);opacity:0}}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+import { firebaseConfig, ROOM_ID } from "./config.js";
+
+const DIVISIONS={"AFC EAST": ["BUF", "MIA", "NE", "NYJ"], "AFC NORTH": ["BAL", "CIN", "CLE", "PIT"], "AFC SOUTH": ["HOU", "IND", "JAX", "TEN"], "AFC WEST": ["DEN", "KC", "LV", "LAC"], "NFC EAST": ["DAL", "NYG", "PHI", "WAS"], "NFC NORTH": ["CHI", "DET", "GB", "MIN"], "NFC SOUTH": ["ATL", "CAR", "NO", "TB"], "NFC WEST": ["ARI", "LAR", "SF", "SEA"]};
+const SLUGS={"BUF": "buf", "MIA": "mia", "NE": "ne", "NYJ": "nyj", "BAL": "bal", "CIN": "cin", "CLE": "cle", "PIT": "pit", "HOU": "hou", "IND": "ind", "JAX": "jax", "TEN": "ten", "DEN": "den", "KC": "kc", "LV": "lv", "LAC": "lac", "DAL": "dal", "NYG": "nyg", "PHI": "phi", "WAS": "was", "CHI": "chi", "DET": "det", "GB": "gb", "MIN": "min", "ATL": "atl", "CAR": "car", "NO": "no", "TB": "tb", "ARI": "ari", "LAR": "lar", "SF": "sf", "SEA": "sea"};
+
+const COLORS={
+  "AFC EAST":["#D50A0A","#00338D"],
+  "AFC NORTH":["#6A1B9A","#FFB612"],
+  "AFC SOUTH":["#03202F","#4B92DB"],
+  "AFC WEST":["#E31837","#FFB81C"],
+  "NFC EAST":["#003594","#A71930"],
+  "NFC NORTH":["#203731","#4F2683"],
+  "NFC SOUTH":["#D50A0A","#D3BC8D"],
+  "NFC WEST":["#003594","#69BE28"]
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const soldRef=ref(db,`boards/${ROOM_ID}/sold`);
+
+let initialized=false;
+let previous={};
+let queue=[];
+let busy=false;
+
+function logo(code){
+  return `https://a.espncdn.com/i/teamlogos/nfl/500/${SLUGS[code]}.png`;
+}
+
+function divisionIsSold(sold,teams){
+  return teams.every(t=>!!sold[t]);
+}
+
+function explode(fx){
+  for(let i=0;i<30;i++){
+    const s=document.createElement("div");
+    s.className="shard";
+    const angle=Math.PI*2*i/30 + (Math.random()*.35-.175);
+    const dist=150+Math.random()*430;
+    s.style.setProperty("--dx",Math.cos(angle)*dist+"px");
+    s.style.setProperty("--dy",Math.sin(angle)*dist+"px");
+    s.style.setProperty("--r",(Math.random()*720-360)+"deg");
+    s.style.background=i%2? "var(--accent)" : "var(--secondary)";
+    fx.appendChild(s);
+  }
+}
+
+function enqueue(name){
+  queue.push(name);
+  playNext();
+}
+
+function playNext(){
+  if(busy||!queue.length)return;
+  busy=true;
+
+  const name=queue.shift();
+  const teams=DIVISIONS[name];
+  const [accent,secondary]=COLORS[name];
+
+  const fx=document.createElement("div");
+  fx.className="fx";
+  fx.style.setProperty("--accent",accent);
+  fx.style.setProperty("--secondary",secondary);
+
+  teams.forEach((code,i)=>{
+    const img=document.createElement("img");
+    img.className=`team-logo logo${i+1}`;
+    img.src=logo(code);
+    img.alt="";
+    fx.appendChild(img);
+  });
+
+  const title=document.createElement("div");
+  title.className="division-name";
+  title.innerHTML=`${name}<small>TAKEN!!</small>`;
+  fx.appendChild(title);
+
+  const ring=document.createElement("div"); ring.className="burst"; fx.appendChild(ring);
+  const flash=document.createElement("div"); flash.className="flash"; fx.appendChild(flash);
+  const s1=document.createElement("div"); s1.className="streak s1"; fx.appendChild(s1);
+  const s2=document.createElement("div"); s2.className="streak s2"; fx.appendChild(s2);
+
+  explode(fx);
+  document.getElementById("stage").appendChild(fx);
+
+  setTimeout(()=>{
+    fx.remove();
+    busy=false;
+    setTimeout(playNext,160);
+  },3600);
+}
+
+onValue(soldRef,snap=>{
+  const current=snap.val()||{};
+
+  if(!initialized){
+    previous={...current};
+    initialized=true;
+    return;
+  }
+
+  Object.entries(DIVISIONS).forEach(([name,teams])=>{
+    const wasSold=divisionIsSold(previous,teams);
+    const isSold=divisionIsSold(current,teams);
+    if(!wasSold && isSold) enqueue(name);
+  });
+
+  previous={...current};
+});
+</script>
+</body>
+</html>
