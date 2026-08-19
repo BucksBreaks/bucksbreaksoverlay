@@ -1,0 +1,44 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Team Alerts</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:transparent!important;overflow:hidden;font-family:Arial,sans-serif}
+#stage{position:relative;width:100vw;height:100vh;pointer-events:none;overflow:hidden}
+.alert{position:absolute;left:-260px;top:38%;width:230px;min-height:96px;display:flex;align-items:center;gap:12px;padding:12px 14px;border:2px solid #ff1c23;border-radius:18px;background:rgba(255,255,255,.9);box-shadow:0 10px 24px rgba(0,0,0,.22);animation:fly 3.1s cubic-bezier(.18,.72,.22,1) forwards}
+.iconWrap{position:relative;width:72px;height:72px;flex:0 0 72px;display:flex;align-items:center;justify-content:center}
+.logo{width:64px;height:64px;object-fit:contain}
+.flyIcon{position:absolute;right:-16px;top:-18px;font-size:38px;animation:bob .55s ease-in-out infinite alternate}
+.teamName{font-size:23px;font-weight:900;color:#111;text-transform:uppercase;line-height:1}
+.taken{margin-top:5px;font-size:16px;font-weight:900;color:#e31b23;letter-spacing:1.2px}
+@keyframes fly{0%{transform:translateX(0);opacity:0}8%{opacity:1}48%{transform:translateX(calc(50vw + 110px));opacity:1}62%{transform:translateX(calc(50vw + 110px));opacity:1}100%{transform:translateX(calc(100vw + 520px));opacity:0}}
+@keyframes bob{from{transform:translateY(-3px) rotate(-8deg)}to{transform:translateY(4px) rotate(8deg)}}
+</style></head><body><div id="stage"></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+import { firebaseConfig, ROOM_ID } from "./config.js";
+
+const META={"BUF": ["Bills", "\ud83e\uddac"], "MIA": ["Dolphins", "\ud83d\udc2c"], "NE": ["Patriots", "\ud83c\uddfa\ud83c\uddf8"], "NYJ": ["Jets", "\u2708\ufe0f"], "BAL": ["Ravens", "\ud83d\udc26\u200d\u2b1b"], "CIN": ["Bengals", "\ud83d\udc05"], "CLE": ["Browns", "\ud83d\udfe4"], "PIT": ["Steelers", "\u2699\ufe0f"], "HOU": ["Texans", "\u2b50"], "IND": ["Colts", "\ud83d\udc0e"], "JAX": ["Jaguars", "\ud83d\udc06"], "TEN": ["Titans", "\u2694\ufe0f"], "DEN": ["Broncos", "\ud83d\udc0e"], "KC": ["Chiefs", "\ud83c\udff9"], "LV": ["Raiders", "\ud83c\udff4\u200d\u2620\ufe0f"], "LAC": ["Chargers", "\u26a1"], "DAL": ["Cowboys", "\ud83e\udd20"], "NYG": ["Giants", "\ud83d\udca5"], "PHI": ["Eagles", "\ud83e\udd85"], "WAS": ["Commanders", "\ud83e\udee1"], "CHI": ["Bears", "\ud83d\udc3b"], "DET": ["Lions", "\ud83e\udd81"], "GB": ["Packers", "\ud83d\udce6"], "MIN": ["Vikings", "\ud83d\udee1\ufe0f"], "ATL": ["Falcons", "\ud83e\udd85"], "CAR": ["Panthers", "\ud83d\udc08\u200d\u2b1b"], "NO": ["Saints", "\u269c\ufe0f"], "TB": ["Buccaneers", "\ud83c\udff4\u200d\u2620\ufe0f"], "ARI": ["Cardinals", "\ud83d\udc26"], "LAR": ["Rams", "\ud83d\udc0f"], "SF": ["49ers", "\u26cf\ufe0f"], "SEA": ["Seahawks", "\ud83e\udd85"]};
+const SLUG={BUF:"buf",MIA:"mia",NE:"ne",NYJ:"nyj",BAL:"bal",CIN:"cin",CLE:"cle",PIT:"pit",HOU:"hou",IND:"ind",JAX:"jax",TEN:"ten",DEN:"den",KC:"kc",LV:"lv",LAC:"lac",DAL:"dal",NYG:"nyg",PHI:"phi",WAS:"was",CHI:"chi",DET:"det",GB:"gb",MIN:"min",ATL:"atl",CAR:"car",NO:"no",TB:"tb",ARI:"ari",LAR:"lar",SF:"sf",SEA:"sea"};
+const app=initializeApp(firebaseConfig), db=getDatabase(app), soldRef=ref(db,`boards/${ROOM_ID}/teamBreakSold`);
+let initialized=false, previous={}, queue=[], animating=false;
+
+function enqueue(code){queue.push(code);playNext()}
+function playNext(){
+ if(animating||!queue.length)return;
+ animating=true;
+ const code=queue.shift(), [name,emoji]=META[code];
+ const el=document.createElement("div");
+ el.className="alert";
+ el.innerHTML=`<div class="iconWrap"><img class="logo" src="https://a.espncdn.com/i/teamlogos/nfl/500/${SLUG[code]}.png"><div class="flyIcon">${emoji}</div></div><div><div class="teamName">${name}</div><div class="taken">TAKEN!</div></div>`;
+ document.getElementById("stage").appendChild(el);
+ el.addEventListener("animationend",()=>{el.remove();animating=false;setTimeout(playNext,120)},{once:true});
+}
+
+onValue(soldRef,snap=>{
+ const current=snap.val()||{};
+ if(!initialized){previous={...current};initialized=true;return;}
+ Object.keys(META).forEach(code=>{if(!previous[code]&&current[code])enqueue(code)});
+ previous={...current};
+});
+</script></body></html>
