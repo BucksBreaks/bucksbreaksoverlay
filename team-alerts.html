@@ -244,6 +244,89 @@ function shatterLogo(fx,m){
   },1450);
 }
 
+
+// ---------- SOUND EFFECTS ----------
+let audioCtx=null;
+function ctx(){
+  if(!audioCtx){
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  }
+  if(audioCtx.state==="suspended") audioCtx.resume().catch(()=>{});
+  return audioCtx;
+}
+function tone(freq=220,dur=.18,type="sine",vol=.16,delay=0,slideTo=null){
+  const c=ctx(), o=c.createOscillator(), g=c.createGain(), t=c.currentTime+delay;
+  o.type=type; o.frequency.setValueAtTime(freq,t);
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(Math.max(20,slideTo),t+dur);
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol,t+.01);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(c.destination); o.start(t); o.stop(t+dur+.03);
+}
+function noise(dur=.25,vol=.12,delay=0,filterFreq=1200){
+  const c=ctx(), len=Math.floor(c.sampleRate*dur), buffer=c.createBuffer(1,len,c.sampleRate);
+  const data=buffer.getChannelData(0);
+  for(let i=0;i<len;i++) data[i]=(Math.random()*2-1)*(1-i/len);
+  const src=c.createBufferSource(), filter=c.createBiquadFilter(), g=c.createGain(), t=c.currentTime+delay;
+  src.buffer=buffer; filter.type="lowpass"; filter.frequency.value=filterFreq;
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  src.connect(filter).connect(g).connect(c.destination); src.start(t); src.stop(t+dur+.02);
+}
+function boom(delay=0,vol=.28){
+  tone(95,.48,"sine",vol,delay,42);
+  noise(.38,vol*.72,delay,420);
+  tone(52,.62,"sine",vol*.7,delay+.03,30);
+}
+function whoosh(delay=0,vol=.13){
+  noise(.42,vol,delay,2600);
+  tone(260,.34,"sawtooth",vol*.4,delay,95);
+}
+function splashSound(delay=0){
+  noise(.5,.16,delay,3200);
+  tone(520,.18,"sine",.08,delay+.04,210);
+  tone(390,.22,"sine",.06,delay+.14,170);
+}
+function electric(delay=0){
+  for(let i=0;i<6;i++) tone(500+Math.random()*900,.055,"square",.055,delay+i*.045,160+Math.random()*250);
+  noise(.28,.12,delay,5200);
+}
+function metallic(delay=0){
+  tone(720,.25,"triangle",.10,delay,320);
+  tone(1040,.18,"triangle",.07,delay+.04,500);
+  noise(.18,.07,delay,5000);
+}
+function playTeamSound(effect){
+  // Opening movement sound
+  if(["charge","bull","gallop","pounce","maul","roar","ram"].includes(effect)){
+    tone(82,.20,"sawtooth",.11,0,55);
+    noise(.18,.08,.05,700);
+    whoosh(.18,.09);
+  } else if(effect==="splash"){
+    splashSound(0);
+    whoosh(.20,.08);
+  } else if(effect==="jet"){
+    whoosh(0,.18);
+    tone(110,.9,"sawtooth",.07,0,220);
+  } else if(effect==="swoop"){
+    whoosh(0,.14);
+    tone(440,.16,"sine",.05,.12,260);
+  } else if(effect==="bolt"){
+    electric(0);
+  } else if(["steel","spinAcross","pack"].includes(effect)){
+    metallic(0);
+  } else if(effect==="cannon"){
+    boom(0,.24);
+    whoosh(.18,.10);
+  } else if(effect==="arrow"){
+    whoosh(0,.15);
+    tone(680,.12,"triangle",.07,.08,300);
+  } else {
+    whoosh(0,.11);
+  }
+  // Logo shatter / TAKEN impact
+  setTimeout(()=>boom(0,.32),1450);
+}
+
 function enqueue(code){
   queue.push(code);
   playNext();
@@ -255,6 +338,7 @@ function playNext(){
 
   const code=queue.shift();
   const m=META[code];
+  playTeamSound(m.effect);
   const fx=document.createElement("div");
   fx.className=`fx ${m.effect}`;
   fx.style.setProperty("--accent",m.accent);
