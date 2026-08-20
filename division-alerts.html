@@ -115,6 +115,48 @@ function explode(fx){
   }
 }
 
+
+// ---------- SOUND EFFECTS ----------
+let audioCtx=null;
+function ctx(){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended") audioCtx.resume().catch(()=>{});
+  return audioCtx;
+}
+function tone(freq=220,dur=.18,type="sine",vol=.16,delay=0,slideTo=null){
+  const c=ctx(),o=c.createOscillator(),g=c.createGain(),t=c.currentTime+delay;
+  o.type=type;o.frequency.setValueAtTime(freq,t);
+  if(slideTo)o.frequency.exponentialRampToValueAtTime(Math.max(20,slideTo),t+dur);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.01);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(c.destination);o.start(t);o.stop(t+dur+.03);
+}
+function noise(dur=.25,vol=.12,delay=0,filterFreq=1200){
+  const c=ctx(),len=Math.floor(c.sampleRate*dur),buffer=c.createBuffer(1,len,c.sampleRate),data=buffer.getChannelData(0);
+  for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*(1-i/len);
+  const src=c.createBufferSource(),filter=c.createBiquadFilter(),g=c.createGain(),t=c.currentTime+delay;
+  src.buffer=buffer;filter.type="lowpass";filter.frequency.value=filterFreq;
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  src.connect(filter).connect(g).connect(c.destination);src.start(t);src.stop(t+dur+.02);
+}
+function whoosh(delay=0,vol=.16){noise(.48,vol,delay,2600);tone(300,.4,"sawtooth",vol*.32,delay,90)}
+function boom(delay=0,vol=.38){
+  tone(92,.55,"sine",vol,delay,38);
+  tone(48,.75,"sine",vol*.75,delay+.02,26);
+  noise(.48,vol*.7,delay,520);
+}
+function sparkle(delay=0){
+  tone(880,.12,"triangle",.06,delay,520);
+  tone(1180,.10,"triangle",.05,delay+.08,700);
+}
+function playDivisionSound(name){
+  // Four quick arrivals, then the big explosion that matches the center flash.
+  whoosh(0,.12); whoosh(.10,.12); whoosh(.20,.12); whoosh(.30,.12);
+  sparkle(.48);
+  setTimeout(()=>boom(0,.44),780);
+  setTimeout(()=>tone(140,.42,"sawtooth",.12,0,70),930);
+}
+
 function enqueue(name){
   queue.push(name);
   playNext();
@@ -127,6 +169,7 @@ function playNext(){
   const name=queue.shift();
   const teams=DIVISIONS[name];
   const [accent,secondary]=COLORS[name];
+  playDivisionSound(name);
 
   const fx=document.createElement("div");
   fx.className="fx";
