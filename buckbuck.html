@@ -25,22 +25,20 @@ html,body{
   background:url("./buckbuck.png") top center/contain no-repeat;
 }
 
-/* Each name lives in its own fixed box */
+/* One invisible placement area per red box */
 .slot{
   position:absolute;
   left:14.8%;
   width:70.4%;
   height:4.55%;
-
   display:flex;
   align-items:center;
   justify-content:center;
-
-  padding:0 7%;
+  padding:0 6%;
   overflow:hidden;
 }
 
-/* Fine-tuned vertical placement for the 11 boxes */
+/* Positions matched to the current Buck Buck PNG */
 .slot:nth-child(1){top:26.15%}
 .slot:nth-child(2){top:32.08%}
 .slot:nth-child(3){top:38.02%}
@@ -55,63 +53,48 @@ html,body{
 
 .text{
   position:relative;
-  z-index:2;
-
-  display:block;
+  display:inline-block;
   max-width:100%;
   white-space:nowrap;
-
   color:#fff;
   font-family:"Arial Black",Impact,Arial,sans-serif;
   font-weight:1000;
-  line-height:.92;
-  letter-spacing:.015em;
+  line-height:.95;
+  letter-spacing:.01em;
   text-align:center;
   text-transform:uppercase;
-
-  -webkit-text-stroke:.65px #151515;
+  -webkit-text-stroke:.7px #111;
   text-shadow:
     0 2px 2px rgba(0,0,0,.95),
-    0 0 5px rgba(0,0,0,.9),
+    0 0 5px rgba(0,0,0,.95),
     0 0 8px rgba(255,20,28,.45);
-
   transform-origin:center center;
 }
 
-/* Fade text only after the spot is taken */
+/*
+  TAKEN effect:
+  The red line is attached DIRECTLY TO THE TEXT SPAN.
+  Its width is therefore only the width of the actual name,
+  never the page and never the whole overlay.
+*/
 .slot.taken .text{
-  opacity:.38;
+  opacity:.48;
 }
 
-/*
-  IMPORTANT:
-  The cross-out is a real child element, NOT a pseudo-element.
-  It is only 72% of the box width and centered.
-  Because the parent .slot has overflow:hidden,
-  it physically cannot leave the box.
-*/
-.strike{
-  display:none;
+.slot.taken .text::after{
+  content:"";
   position:absolute;
-  z-index:4;
-
-  left:14%;
-  width:72%;
+  left:-4px;
+  right:-4px;
   top:50%;
-
   height:4px;
   transform:translateY(-50%);
-
   border-radius:999px;
   background:#ff2028;
-
   box-shadow:
-    0 0 2px rgba(0,0,0,.95),
+    0 0 2px rgba(0,0,0,.9),
     0 0 6px rgba(255,32,40,.95);
-}
-
-.slot.taken .strike{
-  display:block;
+  pointer-events:none;
 }
 </style>
 </head>
@@ -120,188 +103,75 @@ html,body{
 <div id="overlay"></div>
 
 <script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-
-import {
-  getDatabase,
-  ref,
-  onValue
-}
-from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
-
-import {
-  firebaseConfig,
-  ROOM_ID
-}
-from "./config.js";
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+import { firebaseConfig, ROOM_ID } from "./config.js";
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-
-const entriesRef =
-  ref(db, `boards/${ROOM_ID}/buckbuck/entries`);
-
-const overlay =
-  document.getElementById("overlay");
-
+const entriesRef = ref(db, `boards/${ROOM_ID}/buckbuck/entries`);
+const overlay = document.getElementById("overlay");
 
 function fitText(slot){
-
-  const text =
-    slot.querySelector(".text");
-
+  const text = slot.querySelector(".text");
   if(!text) return;
 
-  const maxWidth =
-    slot.clientWidth * .84;
+  const maxWidth = slot.clientWidth * .90;
+  const maxHeight = slot.clientHeight * .84;
 
-  const maxHeight =
-    slot.clientHeight * .80;
+  // Start large for phone readability.
+  let size = Math.max(16, Math.min(68, slot.clientHeight * .98));
 
-  /*
-    Start large and bold.
-    Only shrink when a longer name requires it.
-  */
-  let size =
-    Math.max(
-      15,
-      Math.min(
-        62,
-        slot.clientHeight * .90
-      )
-    );
+  text.style.fontSize = size + "px";
+  text.style.transform = "scaleX(1)";
 
-  text.style.fontSize =
-    size + "px";
-
-  text.style.transform =
-    "scaleX(1)";
-
-
+  // Only shrink when required.
   while(
-    (
-      text.scrollWidth > maxWidth ||
-      text.scrollHeight > maxHeight
-    )
-    &&
-    size > 12
+    (text.scrollWidth > maxWidth || text.scrollHeight > maxHeight) &&
+    size > 13
   ){
-
     size -= .5;
-
-    text.style.fontSize =
-      size + "px";
+    text.style.fontSize = size + "px";
   }
 
-
-  /*
-    Extra safeguard for very long names.
-  */
+  // Final horizontal squeeze only for unusually long names.
   if(text.scrollWidth > maxWidth){
-
-    const scale =
-      Math.max(
-        .72,
-        maxWidth / text.scrollWidth
-      );
-
-    text.style.transform =
-      `scaleX(${scale})`;
+    const scale = Math.max(.74, maxWidth / text.scrollWidth);
+    text.style.transform = `scaleX(${scale})`;
   }
 }
 
-
 function render(entries){
-
   overlay.innerHTML = "";
 
-
   entries
-    .filter(entry =>
-      entry &&
-      entry.name &&
-      String(entry.name).trim()
-    )
-
+    .filter(entry => entry && entry.name && String(entry.name).trim())
     .slice(0,11)
-
     .forEach(entry => {
+      const slot = document.createElement("div");
+      slot.className = "slot" + (entry.taken ? " taken" : "");
 
-      const slot =
-        document.createElement("div");
-
-      slot.className =
-        "slot" +
-        (entry.taken ? " taken" : "");
-
-
-      const text =
-        document.createElement("span");
-
+      const text = document.createElement("span");
       text.className = "text";
-
-      /*
-        Keeps exactly what you type:
-        1. BUCK
-        2. JOHN
-        3. BAILEY
-        etc.
-      */
-      text.textContent =
-        String(entry.name);
-
-
-      const strike =
-        document.createElement("div");
-
-      strike.className = "strike";
-
+      text.textContent = String(entry.name);
 
       slot.appendChild(text);
-      slot.appendChild(strike);
-
       overlay.appendChild(slot);
 
-
-      requestAnimationFrame(
-        () => fitText(slot)
-      );
-
+      requestAnimationFrame(() => fitText(slot));
     });
 }
 
+onValue(entriesRef, snapshot => {
+  const data = snapshot.val() || [];
+  const entries = Array.isArray(data) ? data : Object.values(data);
+  render(entries);
+});
 
-onValue(
-  entriesRef,
-  snapshot => {
-
-    const data =
-      snapshot.val() || [];
-
-    const entries =
-      Array.isArray(data)
-        ? data
-        : Object.values(data);
-
-    render(entries);
-  }
-);
-
-
-window.addEventListener(
-  "resize",
-  () => {
-
-    document
-      .querySelectorAll(".slot")
-      .forEach(fitText);
-
-  }
-);
-
+window.addEventListener("resize", () => {
+  document.querySelectorAll(".slot").forEach(fitText);
+});
 </script>
+
 </body>
 </html>
