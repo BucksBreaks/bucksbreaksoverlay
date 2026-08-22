@@ -3,141 +3,64 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>Buck Buck Overlay</title>
-
 <style>
-*{
-  box-sizing:border-box;
-}
-
-html,body{
-  margin:0;
-  padding:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:transparent !important;
-}
-
-body{
-  font-family:Arial,Helvetica,sans-serif;
-}
-
-#overlay{
-  position:relative;
-  width:100vw;
-  height:100vh;
-  background-image:url("./buckbuck.png");
-  background-size:contain;
-  background-position:top center;
-  background-repeat:no-repeat;
-}
-
-/* Area where the names appear */
-#names{
-  position:absolute;
-
-  /* We can fine-tune these after we see it */
-  top:37%;
-  left:22%;
-  width:56%;
-  height:50%;
-
-  display:flex;
-  flex-direction:column;
-  gap:1.5%;
-}
-
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:transparent!important;font-family:Arial,Helvetica,sans-serif}
+#overlay{position:relative;width:100vw;height:100vh;background-image:url("./buckbuck.png");background-size:contain;background-position:top center;background-repeat:no-repeat}
+#names{position:absolute;top:27%;left:15%;width:70%;height:64%;display:flex;flex-direction:column;justify-content:space-between;gap:.4%}
 .name{
-  flex:1;
-  min-height:0;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  color:white;
-  font-size:clamp(20px,4.2vw,54px);
-  font-weight:900;
-  letter-spacing:.04em;
-  text-transform:uppercase;
-
-  text-shadow:
-    0 2px 3px #000,
-    0 0 8px #000,
-    0 0 12px rgba(255,0,0,.65);
+  position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
+  padding:0 6%;color:#fff;font-weight:900;letter-spacing:.02em;text-transform:uppercase;
+  text-shadow:0 2px 3px #000,0 0 8px #000,0 0 12px rgba(255,0,0,.55);
+  white-space:nowrap;overflow:hidden;
 }
+.name span{display:block;max-width:100%;transform-origin:center center}
+.name.taken span{opacity:.42}
+.name.taken::before,.name.taken::after{
+  content:"";position:absolute;left:10%;right:10%;top:50%;height:5px;border-radius:999px;
+  background:#ff1d25;box-shadow:0 0 8px rgba(255,29,37,.85);z-index:3;
+}
+.name.taken::before{transform:rotate(3deg)}
+.name.taken::after{transform:rotate(-3deg)}
 </style>
 </head>
-
 <body>
-
-<div id="overlay">
-  <div id="names"></div>
-</div>
-
+<div id="overlay"><div id="names"></div></div>
 <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+import { firebaseConfig, ROOM_ID } from "./config.js";
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const namesRef=ref(db,`boards/${ROOM_ID}/buckbuck/entries`);
+const box=document.getElementById("names");
 
-import {
-  getDatabase,
-  ref,
-  onValue
+function fitText(el){
+  const span=el.querySelector("span");
+  let size=44;
+  span.style.fontSize=size+"px";
+  span.style.transform="scale(1)";
+  const max=el.clientWidth*.88;
+  while(span.scrollWidth>max && size>14){ size-=1; span.style.fontSize=size+"px"; }
+  if(span.scrollWidth>max){ span.style.transform=`scale(${max/span.scrollWidth})`; }
 }
-from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
 
-import {
-  firebaseConfig,
-  ROOM_ID
-}
-from "./config.js";
-
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const namesRef =
-  ref(db, `boards/${ROOM_ID}/buckbuck/names`);
-
-const namesContainer =
-  document.getElementById("names");
-
-
-onValue(namesRef, snapshot => {
-
-  const data = snapshot.val() || {};
-
-  namesContainer.innerHTML = "";
-
-  /*
-  This automatically creates however many
-  names you type into the controller.
-  */
-
-  const names = Array.isArray(data)
-    ? data
-    : Object.values(data);
-
-  names
-    .filter(name => name && String(name).trim())
-    .forEach(name => {
-
-      const row = document.createElement("div");
-
-      row.className = "name";
-
-      row.textContent = name;
-
-      namesContainer.appendChild(row);
-
-    });
-
+onValue(namesRef,snap=>{
+  const data=snap.val()||[];
+  const entries=Array.isArray(data)?data:Object.values(data);
+  box.innerHTML="";
+  entries.filter(e=>e && e.name && String(e.name).trim()).forEach(e=>{
+    const row=document.createElement("div");
+    row.className="name"+(e.taken?" taken":"");
+    row.innerHTML=`<span>${String(e.name)}</span>`;
+    box.appendChild(row);
+    requestAnimationFrame(()=>fitText(row));
+  });
 });
 
+window.addEventListener("resize",()=>document.querySelectorAll(".name").forEach(fitText));
 </script>
-
 </body>
 </html>
