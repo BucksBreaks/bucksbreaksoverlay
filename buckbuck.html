@@ -3,14 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>Buck Buck Overlay</title>
 
 <style>
-
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box}
 
 html,body{
   margin:0;
@@ -18,406 +14,176 @@ html,body{
   width:100%;
   height:100%;
   overflow:hidden;
-  background:transparent !important;
+  background:transparent!important;
   font-family:Arial,Helvetica,sans-serif;
 }
 
-/* Main Buck Buck graphic */
 #overlay{
   position:relative;
   width:100vw;
   height:100vh;
-
-  background-image:url("./buckbuck.png");
-  background-size:contain;
-  background-position:top center;
-  background-repeat:no-repeat;
+  background:url("./buckbuck.png") top center/contain no-repeat;
 }
 
-
-/* EACH NAME IS LOCKED INSIDE A RED BOX */
-.name{
+/*
+  Each slot is its own clipped container.
+  That means the red TAKEN line physically cannot extend outside the box.
+*/
+.slot{
   position:absolute;
-
-  left:15.2%;
-  width:69.6%;
-  height:4.8%;
-
+  left:14.4%;
+  width:71.2%;
+  height:4.95%;
   display:flex;
   align-items:center;
   justify-content:center;
-
-  padding-left:5%;
-  padding-right:5%;
-
   overflow:hidden;
+  padding:0 5%;
+}
+
+/* Match the 11 red boxes on the current buckbuck.png */
+.slot:nth-child(1){top:26.05%}
+.slot:nth-child(2){top:32.00%}
+.slot:nth-child(3){top:37.95%}
+.slot:nth-child(4){top:43.90%}
+.slot:nth-child(5){top:49.85%}
+.slot:nth-child(6){top:55.80%}
+.slot:nth-child(7){top:61.75%}
+.slot:nth-child(8){top:67.70%}
+.slot:nth-child(9){top:73.65%}
+.slot:nth-child(10){top:79.60%}
+.slot:nth-child(11){top:85.55%}
+
+.slot .text{
+  display:block;
+  max-width:100%;
   white-space:nowrap;
+  overflow:visible;
 
-  color:#ffffff;
-
-  font-family:Arial Black,Arial,Helvetica,sans-serif;
+  color:#fff;
+  font-family:"Arial Black",Impact,Arial,Helvetica,sans-serif;
   font-weight:1000;
-
-  letter-spacing:.025em;
-
+  line-height:.95;
+  letter-spacing:.01em;
   text-align:center;
   text-transform:uppercase;
 
+  -webkit-text-stroke:0.7px #111;
   text-shadow:
-    0 2px 2px #000,
-    0 0 4px #000,
-    0 0 7px #000,
-    0 0 10px rgba(255,25,30,.45);
-
-  -webkit-text-stroke:.35px rgba(0,0,0,.8);
-}
-
-
-/* Position each name directly over each red box */
-
-.name:nth-child(1){
-  top:26.35%;
-}
-
-.name:nth-child(2){
-  top:32.35%;
-}
-
-.name:nth-child(3){
-  top:38.35%;
-}
-
-.name:nth-child(4){
-  top:44.35%;
-}
-
-.name:nth-child(5){
-  top:50.25%;
-}
-
-.name:nth-child(6){
-  top:56.20%;
-}
-
-.name:nth-child(7){
-  top:62.10%;
-}
-
-.name:nth-child(8){
-  top:68.15%;
-}
-
-.name:nth-child(9){
-  top:74.10%;
-}
-
-.name:nth-child(10){
-  top:80.05%;
-}
-
-.name:nth-child(11){
-  top:86.00%;
-}
-
-
-/* Actual wording */
-.name span{
-  display:inline-block;
-
-  max-width:100%;
-
-  line-height:1;
+    0 2px 2px rgba(0,0,0,.95),
+    0 0 5px rgba(0,0,0,.9),
+    0 0 8px rgba(255,20,28,.42);
 
   transform-origin:center center;
 }
 
-
-/* Taken name fades slightly */
-.name.taken span{
+/* Dim only the wording when taken */
+.slot.taken .text{
   opacity:.42;
 }
 
-
-/* CROSS-OUT — stays completely inside its red box */
-
-.name.taken::after{
-
+/*
+  Cross-out is INSIDE .slot, and .slot has overflow:hidden.
+  So this cannot spill outside the red box.
+*/
+.slot.taken::after{
   content:"";
-
   position:absolute;
-
-  left:7%;
-  right:7%;
-
+  left:9%;
+  right:9%;
   top:50%;
-
-  height:4px;
-
+  height:max(3px,.45vh);
   transform:translateY(-50%);
-
   border-radius:999px;
-
-  background:#ff1c23;
-
+  background:#ff2028;
   box-shadow:
-    0 0 3px #000,
-    0 0 7px rgba(255,28,35,.95);
-
+    0 0 2px rgba(0,0,0,.95),
+    0 0 7px rgba(255,32,40,.95);
   z-index:5;
 }
-
 </style>
 </head>
 
-
 <body>
-
 <div id="overlay"></div>
 
-
 <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+import { firebaseConfig, ROOM_ID } from "./config.js";
 
-import {
-  initializeApp
-}
-from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-
-import {
-  getDatabase,
-  ref,
-  onValue
-}
-from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
-
-
-import {
-  firebaseConfig,
-  ROOM_ID
-}
-from "./config.js";
-
-
-const app =
-  initializeApp(firebaseConfig);
-
-const db =
-  getDatabase(app);
-
-
-const entriesRef =
-  ref(
-    db,
-    `boards/${ROOM_ID}/buckbuck/entries`
-  );
-
-
-const overlay =
-  document.getElementById("overlay");
-
-
+const entriesRef = ref(db, `boards/${ROOM_ID}/buckbuck/entries`);
+const overlay = document.getElementById("overlay");
 
 /*
-Automatically makes the text as LARGE as possible
-while keeping the entire name inside the red box.
-*/
-
-function fitText(row){
-
-  const span =
-    row.querySelector("span");
-
-
-  const maxWidth =
-    row.clientWidth * .88;
-
-
-  const maxHeight =
-    row.clientHeight * .72;
-
-
-  /*
-  Start larger so names are much easier
-  to read on a phone.
-  */
-
-  let size =
-    Math.min(
-      58,
-      row.clientHeight * .72
-    );
-
-
-  size =
-    Math.max(13,size);
-
-
-  span.style.fontSize =
-    size + "px";
-
-
-  span.style.transform =
-    "scaleX(1)";
-
-
-  /*
-  Shrink only when needed.
+  Make each name as large/bold as possible.
   Short names stay big.
-  */
-
-  while(
-
-    (
-      span.scrollWidth > maxWidth ||
-      span.scrollHeight > maxHeight
-    )
-
-    && size > 12
-
-  ){
-
-    size -= .5;
-
-    span.style.fontSize =
-      size + "px";
-
-  }
-
-
-  /*
-  Final protection for extremely long names.
-  */
-
-  if(span.scrollWidth > maxWidth){
-
-    const scale =
-      maxWidth / span.scrollWidth;
-
-    span.style.transform =
-      `scaleX(${scale})`;
-
-  }
-
-}
-
-
-
-/*
-Build the names when Firebase changes
+  Long names shrink only enough to remain inside the red box.
 */
+function fitText(slot){
+  const text = slot.querySelector(".text");
+  if(!text) return;
+
+  const maxWidth = slot.clientWidth * .90;
+  const maxHeight = slot.clientHeight * .82;
+
+  // Start near the full height of the box so the names are much easier to read.
+  let size = Math.max(16, Math.min(64, slot.clientHeight * .88));
+
+  text.style.fontSize = size + "px";
+  text.style.transform = "scaleX(1)";
+
+  // Shrink font only if necessary.
+  while(
+    (text.scrollWidth > maxWidth || text.scrollHeight > maxHeight) &&
+    size > 13
+  ){
+    size -= .5;
+    text.style.fontSize = size + "px";
+  }
+
+  // Last-resort horizontal compression for an unusually long name.
+  if(text.scrollWidth > maxWidth){
+    const sx = Math.max(.72, maxWidth / text.scrollWidth);
+    text.style.transform = `scaleX(${sx})`;
+  }
+}
 
 function render(entries){
-
-  /*
-  Remove the old names but leave
-  the Buck Buck image alone.
-  */
-
-  overlay
-    .querySelectorAll(".name")
-    .forEach(el=>el.remove());
-
+  overlay.innerHTML = "";
 
   entries
-
-    .filter(entry =>
-      entry &&
-      entry.name &&
-      String(entry.name).trim()
-    )
-
+    .filter(entry => entry && entry.name && String(entry.name).trim())
     .slice(0,11)
+    .forEach(entry => {
+      const slot = document.createElement("div");
+      slot.className = "slot" + (entry.taken ? " taken" : "");
 
-    .forEach(entry=>{
+      const text = document.createElement("span");
+      text.className = "text";
 
+      // Keeps EXACTLY what you type, including your own 1., 2., 3., etc.
+      text.textContent = String(entry.name);
 
-      const row =
-        document.createElement("div");
+      slot.appendChild(text);
+      overlay.appendChild(slot);
 
-
-      row.className =
-        "name" +
-        (entry.taken ? " taken" : "");
-
-
-
-      const span =
-        document.createElement("span");
-
-
-      /*
-      This keeps EXACTLY what you type
-      in the controller.
-
-      Example:
-
-      1. BAILEY
-      2. JOHN
-      3. JEFFREY
-      */
-
-      span.textContent =
-        String(entry.name);
-
-
-
-      row.appendChild(span);
-
-      overlay.appendChild(row);
-
-
-
-      requestAnimationFrame(
-        ()=>fitText(row)
-      );
-
+      requestAnimationFrame(() => fitText(slot));
     });
-
 }
 
+onValue(entriesRef, snapshot => {
+  const data = snapshot.val() || [];
+  const entries = Array.isArray(data) ? data : Object.values(data);
+  render(entries);
+});
 
-
-/*
-Live Firebase connection
-*/
-
-onValue(
-  entriesRef,
-  snapshot=>{
-
-    const data =
-      snapshot.val() || [];
-
-
-    const entries =
-      Array.isArray(data)
-      ? data
-      : Object.values(data);
-
-
-    render(entries);
-
-  }
-);
-
-
-
-/*
-Re-fit text if TikTok changes
-the size of the Link source.
-*/
-
-window.addEventListener(
-  "resize",
-  ()=>{
-
-    document
-      .querySelectorAll(".name")
-      .forEach(fitText);
-
-  }
-);
-
+window.addEventListener("resize", () => {
+  document.querySelectorAll(".slot").forEach(fitText);
+});
 </script>
 
 </body>
