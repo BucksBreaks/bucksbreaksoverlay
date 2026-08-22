@@ -4,203 +4,77 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Buck Buck Controller</title>
-
 <style>
 *{box-sizing:border-box}
-
-body{
-  margin:0;
-  padding:30px;
-  background:#111;
-  color:white;
-  font-family:Arial,Helvetica,sans-serif;
-}
-
-.container{
-  max-width:650px;
-  margin:auto;
-}
-
-h1{
-  margin:0 0 5px;
-  font-size:34px;
-}
-
-.subtitle{
-  color:#aaa;
-  margin-bottom:25px;
-}
-
-textarea{
-  width:100%;
-  height:400px;
-  background:#202020;
-  border:2px solid #e31b23;
-  border-radius:12px;
-  padding:18px;
-  color:white;
-  font-size:24px;
-  line-height:1.6;
-  resize:vertical;
-  outline:none;
-}
-
-textarea:focus{
-  box-shadow:0 0 15px rgba(227,27,35,.5);
-}
-
-button{
-  width:100%;
-  margin-top:15px;
-  padding:18px;
-  border:0;
-  border-radius:10px;
-  background:#e31b23;
-  color:white;
-  font-size:22px;
-  font-weight:900;
-  cursor:pointer;
-}
-
-button:hover{
-  filter:brightness(1.15);
-}
-
-#status{
-  margin-top:12px;
-  text-align:center;
-  color:#aaa;
-  font-weight:bold;
-}
-
-.tip{
-  margin-top:20px;
-  padding:15px;
-  background:#1c1c1c;
-  border-radius:10px;
-  color:#ccc;
-  line-height:1.5;
-}
+body{margin:0;background:#111;color:#fff;font-family:Arial,Helvetica,sans-serif}
+.wrap{max-width:760px;margin:auto;padding:24px}
+h1{margin:0 0 6px}.sub{color:#aaa;margin-bottom:18px}
+#rows{display:flex;flex-direction:column;gap:8px}
+.row{display:grid;grid-template-columns:1fr 110px 44px;gap:8px;align-items:center}
+input[type=text]{width:100%;padding:12px 14px;border-radius:9px;border:1px solid #444;background:#1c1c1c;color:#fff;font-size:18px}
+.toggle{display:flex;align-items:center;justify-content:center;gap:7px;background:#1c1c1c;border:1px solid #444;border-radius:9px;padding:11px 8px;font-weight:800}
+.remove{height:44px;border-radius:9px;border:1px solid #555;background:#241214;color:#fff;font-size:20px;cursor:pointer}
+.actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+button{border:0;border-radius:9px;padding:12px 16px;color:#fff;font-weight:900;cursor:pointer;background:#333}
+.primary{background:#e31b23}.add{background:#202020;border:1px solid #555}
+#status{margin-top:12px;color:#aaa}
 </style>
 </head>
-
 <body>
-
-<div class="container">
-
+<div class="wrap">
 <h1>BUCK BUCK</h1>
-
-<div class="subtitle">
-Type one name per line.
+<div class="sub">Type exactly what you want shown — including “1.”, “2.”, etc. Check TAKEN to cross that line off live.</div>
+<div id="rows"></div>
+<div class="actions">
+  <button class="add" id="addRow">+ ADD LINE</button>
+  <button class="primary" id="save">UPDATE OVERLAY</button>
 </div>
-
-<textarea
-  id="names"
-  placeholder="Bailey&#10;John&#10;Maui&#10;Wendy&#10;NHK">
-</textarea>
-
-<button id="update">
-UPDATE OVERLAY
-</button>
-
-<div id="status">
-Ready
-</div>
-
-<div class="tip">
-Each line becomes one name on the Buck Buck overlay.
-Delete a name from this box and click Update Overlay to remove it.
-</div>
-
+<div id="status">Ready</div>
 </div>
 
 <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+import { firebaseConfig, ROOM_ID } from "./config.js";
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const entriesRef=ref(db,`boards/${ROOM_ID}/buckbuck/entries`);
+const rows=document.getElementById("rows");
+const status=document.getElementById("status");
 
-import {
-  getDatabase,
-  ref,
-  onValue,
-  set
+function addRow(entry={name:"",taken:false}){
+  const row=document.createElement("div");
+  row.className="row";
+  row.innerHTML=`
+    <input class="nm" type="text" value="${String(entry.name||"").replaceAll('"','&quot;')}" placeholder="1. BAILEY">
+    <label class="toggle"><input class="tk" type="checkbox" ${entry.taken?"checked":""}> TAKEN</label>
+    <button class="remove" title="Remove line">×</button>`;
+  row.querySelector(".remove").onclick=()=>row.remove();
+  rows.appendChild(row);
 }
-from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
 
-import {
-  firebaseConfig,
-  ROOM_ID
-}
-from "./config.js";
+onValue(entriesRef,snap=>{
+  const data=snap.val()||[];
+  const entries=Array.isArray(data)?data:Object.values(data);
+  rows.innerHTML="";
+  if(entries.length){ entries.forEach(addRow); }
+  else { for(let i=0;i<6;i++) addRow(); }
+  status.textContent="Connected";
+},{onlyOnce:true});
 
+document.getElementById("addRow").onclick=()=>addRow();
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const namesRef =
-  ref(db, `boards/${ROOM_ID}/buckbuck/names`);
-
-const textarea =
-  document.getElementById("names");
-
-const button =
-  document.getElementById("update");
-
-const status =
-  document.getElementById("status");
-
-
-/* Load whatever names are already saved */
-
-onValue(namesRef, snapshot => {
-
-  const data = snapshot.val() || [];
-
-  const names = Array.isArray(data)
-    ? data
-    : Object.values(data);
-
-  textarea.value =
-    names.filter(Boolean).join("\n");
-
-});
-
-
-/* Send names to the live overlay */
-
-button.addEventListener("click", async () => {
-
-  const names =
-    textarea.value
-      .split("\n")
-      .map(name => name.trim())
-      .filter(Boolean);
-
-  status.textContent = "Updating...";
-
-  try {
-
-    await set(namesRef, names);
-
-    status.textContent =
-      "✓ Overlay updated!";
-
-    setTimeout(() => {
-      status.textContent = "Ready";
-    }, 2000);
-
-  } catch(error) {
-
-    console.error(error);
-
-    status.textContent =
-      "Error updating overlay";
-
-  }
-
-});
-
+document.getElementById("save").onclick=async()=>{
+  const entries=[...document.querySelectorAll(".row")].map(r=>({
+    name:r.querySelector(".nm").value.trim(),
+    taken:r.querySelector(".tk").checked
+  })).filter(e=>e.name);
+  status.textContent="Updating...";
+  await set(entriesRef,entries);
+  status.textContent="✓ Updated";
+  setTimeout(()=>status.textContent="Ready",1500);
+};
 </script>
-
 </body>
 </html>
