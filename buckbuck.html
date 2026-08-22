@@ -3,162 +3,422 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Buck Buck Overlay</title>
+
 <style>
-*{box-sizing:border-box}
+
+*{
+  box-sizing:border-box;
+}
+
 html,body{
   margin:0;
   padding:0;
   width:100%;
   height:100%;
   overflow:hidden;
-  background:transparent!important;
+  background:transparent !important;
   font-family:Arial,Helvetica,sans-serif;
 }
 
-/* Keep the overlay locked to the exact proportions of buckbuck.png */
+/* Main Buck Buck graphic */
 #overlay{
   position:relative;
   width:100vw;
   height:100vh;
-  background:url("./buckbuck.png") top center/contain no-repeat;
+
+  background-image:url("./buckbuck.png");
+  background-size:contain;
+  background-position:top center;
+  background-repeat:no-repeat;
 }
 
-/*
-  These 11 slots are mapped directly to the 11 red boxes
-  in your current buckbuck.png.
-*/
+
+/* EACH NAME IS LOCKED INSIDE A RED BOX */
 .name{
   position:absolute;
+
   left:15.2%;
   width:69.6%;
-  height:4.7%;
+  height:4.8%;
+
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:0 4%;
+
+  padding-left:5%;
+  padding-right:5%;
+
   overflow:hidden;
   white-space:nowrap;
-  color:#fff;
-  font-weight:900;
-  letter-spacing:.015em;
-  text-transform:uppercase;
+
+  color:#ffffff;
+
+  font-family:Arial Black,Arial,Helvetica,sans-serif;
+  font-weight:1000;
+
+  letter-spacing:.025em;
+
   text-align:center;
+  text-transform:uppercase;
+
   text-shadow:
-    0 2px 3px #000,
+    0 2px 2px #000,
+    0 0 4px #000,
     0 0 7px #000,
-    0 0 10px rgba(255,0,0,.55);
+    0 0 10px rgba(255,25,30,.45);
+
+  -webkit-text-stroke:.35px rgba(0,0,0,.8);
 }
 
-/* Exact vertical centers for each graphic line */
-.name:nth-child(1){top:26.35%}
-.name:nth-child(2){top:32.35%}
-.name:nth-child(3){top:38.35%}
-.name:nth-child(4){top:44.35%}
-.name:nth-child(5){top:50.25%}
-.name:nth-child(6){top:56.20%}
-.name:nth-child(7){top:62.10%}
-.name:nth-child(8){top:68.15%}
-.name:nth-child(9){top:74.10%}
-.name:nth-child(10){top:80.05%}
-.name:nth-child(11){top:86.00%}
 
+/* Position each name directly over each red box */
+
+.name:nth-child(1){
+  top:26.35%;
+}
+
+.name:nth-child(2){
+  top:32.35%;
+}
+
+.name:nth-child(3){
+  top:38.35%;
+}
+
+.name:nth-child(4){
+  top:44.35%;
+}
+
+.name:nth-child(5){
+  top:50.25%;
+}
+
+.name:nth-child(6){
+  top:56.20%;
+}
+
+.name:nth-child(7){
+  top:62.10%;
+}
+
+.name:nth-child(8){
+  top:68.15%;
+}
+
+.name:nth-child(9){
+  top:74.10%;
+}
+
+.name:nth-child(10){
+  top:80.05%;
+}
+
+.name:nth-child(11){
+  top:86.00%;
+}
+
+
+/* Actual wording */
 .name span{
   display:inline-block;
+
   max-width:100%;
+
   line-height:1;
+
   transform-origin:center center;
 }
 
+
+/* Taken name fades slightly */
 .name.taken span{
-  opacity:.38;
+  opacity:.42;
 }
 
-.name.taken::before,
+
+/* CROSS-OUT — stays completely inside its red box */
+
 .name.taken::after{
+
   content:"";
+
   position:absolute;
-  left:6%;
-  right:6%;
+
+  left:7%;
+  right:7%;
+
   top:50%;
+
   height:4px;
+
+  transform:translateY(-50%);
+
   border-radius:999px;
-  background:#ff1d25;
-  box-shadow:0 0 7px rgba(255,29,37,.9);
-  z-index:4;
+
+  background:#ff1c23;
+
+  box-shadow:
+    0 0 3px #000,
+    0 0 7px rgba(255,28,35,.95);
+
+  z-index:5;
 }
-.name.taken::before{transform:rotate(2deg)}
-.name.taken::after{transform:rotate(-2deg)}
+
 </style>
 </head>
 
+
 <body>
+
 <div id="overlay"></div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
-import { firebaseConfig, ROOM_ID } from "./config.js";
 
-const app=initializeApp(firebaseConfig);
-const db=getDatabase(app);
-const entriesRef=ref(db,`boards/${ROOM_ID}/buckbuck/entries`);
-const overlay=document.getElementById("overlay");
+<script type="module">
+
+import {
+  initializeApp
+}
+from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
+
+import {
+  getDatabase,
+  ref,
+  onValue
+}
+from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+
+
+import {
+  firebaseConfig,
+  ROOM_ID
+}
+from "./config.js";
+
+
+const app =
+  initializeApp(firebaseConfig);
+
+const db =
+  getDatabase(app);
+
+
+const entriesRef =
+  ref(
+    db,
+    `boards/${ROOM_ID}/buckbuck/entries`
+  );
+
+
+const overlay =
+  document.getElementById("overlay");
+
+
 
 /*
-  Shrinks each line until the ENTIRE thing fits inside its red box.
-  This preserves your typed numbering, e.g. "1. JEFFREY".
+Automatically makes the text as LARGE as possible
+while keeping the entire name inside the red box.
 */
-function fitText(row){
-  const span=row.querySelector("span");
-  const maxWidth=row.clientWidth * .90;
-  const maxHeight=row.clientHeight * .68;
 
-  let size=Math.max(12,Math.min(40,row.clientHeight*.60));
-  span.style.fontSize=size+"px";
-  span.style.transform="scale(1)";
+function fitText(row){
+
+  const span =
+    row.querySelector("span");
+
+
+  const maxWidth =
+    row.clientWidth * .88;
+
+
+  const maxHeight =
+    row.clientHeight * .72;
+
+
+  /*
+  Start larger so names are much easier
+  to read on a phone.
+  */
+
+  let size =
+    Math.min(
+      58,
+      row.clientHeight * .72
+    );
+
+
+  size =
+    Math.max(13,size);
+
+
+  span.style.fontSize =
+    size + "px";
+
+
+  span.style.transform =
+    "scaleX(1)";
+
+
+  /*
+  Shrink only when needed.
+  Short names stay big.
+  */
 
   while(
-    (span.scrollWidth>maxWidth || span.scrollHeight>maxHeight) &&
-    size>11
+
+    (
+      span.scrollWidth > maxWidth ||
+      span.scrollHeight > maxHeight
+    )
+
+    && size > 12
+
   ){
-    size-=1;
-    span.style.fontSize=size+"px";
+
+    size -= .5;
+
+    span.style.fontSize =
+      size + "px";
+
   }
 
-  if(span.scrollWidth>maxWidth){
-    span.style.transform=`scaleX(${maxWidth/span.scrollWidth})`;
+
+  /*
+  Final protection for extremely long names.
+  */
+
+  if(span.scrollWidth > maxWidth){
+
+    const scale =
+      maxWidth / span.scrollWidth;
+
+    span.style.transform =
+      `scaleX(${scale})`;
+
   }
+
 }
 
+
+
+/*
+Build the names when Firebase changes
+*/
+
 function render(entries){
-  overlay.querySelectorAll(".name").forEach(el=>el.remove());
+
+  /*
+  Remove the old names but leave
+  the Buck Buck image alone.
+  */
+
+  overlay
+    .querySelectorAll(".name")
+    .forEach(el=>el.remove());
+
 
   entries
-    .filter(e=>e && e.name && String(e.name).trim())
-    .slice(0,11)
-    .forEach(entry=>{
-      const row=document.createElement("div");
-      row.className="name"+(entry.taken?" taken":"");
 
-      const span=document.createElement("span");
-      span.textContent=String(entry.name);
+    .filter(entry =>
+      entry &&
+      entry.name &&
+      String(entry.name).trim()
+    )
+
+    .slice(0,11)
+
+    .forEach(entry=>{
+
+
+      const row =
+        document.createElement("div");
+
+
+      row.className =
+        "name" +
+        (entry.taken ? " taken" : "");
+
+
+
+      const span =
+        document.createElement("span");
+
+
+      /*
+      This keeps EXACTLY what you type
+      in the controller.
+
+      Example:
+
+      1. BAILEY
+      2. JOHN
+      3. JEFFREY
+      */
+
+      span.textContent =
+        String(entry.name);
+
+
+
       row.appendChild(span);
 
       overlay.appendChild(row);
-      requestAnimationFrame(()=>fitText(row));
+
+
+
+      requestAnimationFrame(
+        ()=>fitText(row)
+      );
+
     });
+
 }
 
-onValue(entriesRef,snap=>{
-  const data=snap.val()||[];
-  const entries=Array.isArray(data)?data:Object.values(data);
-  render(entries);
-});
 
-window.addEventListener("resize",()=>{
-  document.querySelectorAll(".name").forEach(fitText);
-});
+
+/*
+Live Firebase connection
+*/
+
+onValue(
+  entriesRef,
+  snapshot=>{
+
+    const data =
+      snapshot.val() || [];
+
+
+    const entries =
+      Array.isArray(data)
+      ? data
+      : Object.values(data);
+
+
+    render(entries);
+
+  }
+);
+
+
+
+/*
+Re-fit text if TikTok changes
+the size of the Link source.
+*/
+
+window.addEventListener(
+  "resize",
+  ()=>{
+
+    document
+      .querySelectorAll(".name")
+      .forEach(fitText);
+
+  }
+);
+
 </script>
+
 </body>
 </html>
