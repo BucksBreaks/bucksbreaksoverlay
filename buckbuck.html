@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Buck Buck Overlay</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:transparent !important;
+}
+
+body{
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+#overlay{
+  position:relative;
+  width:100vw;
+  height:100vh;
+  background-image:url("./buckbuck.png");
+  background-size:contain;
+  background-position:top center;
+  background-repeat:no-repeat;
+}
+
+/* Area where the names appear */
+#names{
+  position:absolute;
+
+  /* We can fine-tune these after we see it */
+  top:37%;
+  left:22%;
+  width:56%;
+  height:50%;
+
+  display:flex;
+  flex-direction:column;
+  gap:1.5%;
+}
+
+.name{
+  flex:1;
+  min-height:0;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:white;
+  font-size:clamp(20px,4.2vw,54px);
+  font-weight:900;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+
+  text-shadow:
+    0 2px 3px #000,
+    0 0 8px #000,
+    0 0 12px rgba(255,0,0,.65);
+}
+</style>
+</head>
+
+<body>
+
+<div id="overlay">
+  <div id="names"></div>
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  onValue
+}
+from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+
+import {
+  firebaseConfig,
+  ROOM_ID
+}
+from "./config.js";
+
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const namesRef =
+  ref(db, `boards/${ROOM_ID}/buckbuck/names`);
+
+const namesContainer =
+  document.getElementById("names");
+
+
+onValue(namesRef, snapshot => {
+
+  const data = snapshot.val() || {};
+
+  namesContainer.innerHTML = "";
+
+  /*
+  This automatically creates however many
+  names you type into the controller.
+  */
+
+  const names = Array.isArray(data)
+    ? data
+    : Object.values(data);
+
+  names
+    .filter(name => name && String(name).trim())
+    .forEach(name => {
+
+      const row = document.createElement("div");
+
+      row.className = "name";
+
+      row.textContent = name;
+
+      namesContainer.appendChild(row);
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>
